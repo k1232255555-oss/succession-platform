@@ -1,4 +1,6 @@
 import { AuditAction } from "@prisma/client";
+import Link from "next/link";
+import { UsersRound } from "lucide-react";
 import { requireRole, requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -51,16 +53,25 @@ export default async function SecuritySettingsPage() {
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto w-full max-w-6xl">
-        <div className="flex flex-col gap-3 border-b border-zinc-800 pb-6">
-          <p className="text-sm font-medium text-amber-200/80">
-            Security & Access
-          </p>
-          <h1 className="text-3xl font-semibold text-white">
-            権限管理と監査ログ
-          </h1>
-          <p className="max-w-2xl text-sm leading-6 text-zinc-400">
-            企業アカウントの権限設計と、重要操作の履歴を確認できます。
-          </p>
+        <div className="flex flex-col gap-4 border-b border-zinc-800 pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-amber-200/80">
+              Security & Access
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-white">
+              権限管理と監査ログ
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
+              企業アカウントの権限設計と、重要操作の履歴を確認できます。
+            </p>
+          </div>
+          <Link
+            href="/settings/users"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
+          >
+            <UsersRound className="h-4 w-4" />
+            ユーザー管理
+          </Link>
         </div>
 
         <section className="grid gap-4 py-6 md:grid-cols-2 xl:grid-cols-4">
