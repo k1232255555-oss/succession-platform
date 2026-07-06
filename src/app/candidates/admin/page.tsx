@@ -5,9 +5,11 @@ import {
   Crown,
   FilePenLine,
   Plus,
+  RefreshCw,
   Trash2,
   UsersRound,
 } from "lucide-react";
+import { recalculateAllCandidateAiMatchesAction } from "@/app/candidates/admin/ai-actions";
 import { deleteCandidateAction } from "@/app/candidates/admin/actions";
 import { requireRole, requireUser } from "@/lib/auth";
 import { reviewStatusLabels } from "@/lib/candidates";
@@ -15,9 +17,24 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export default async function CandidateAdminPage() {
+type PageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function getParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string,
+) {
+  const value = params[key];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function CandidateAdminPage({ searchParams }: PageProps) {
   const user = await requireUser();
   requireRole(user, ["OWNER"]);
+  const params = (await searchParams) ?? {};
+  const notice = getParam(params, "notice");
+  const error = getParam(params, "error");
 
   const candidates = await prisma.successorCandidate.findMany({
     where: {
@@ -52,14 +69,37 @@ export default async function CandidateAdminPage() {
             </p>
           </div>
 
-          <Link
-            href="/candidates/admin/new"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
-          >
-            <Plus className="h-4 w-4" />
-            新規登録
-          </Link>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <form action={recalculateAllCandidateAiMatchesAction}>
+              <button
+                type="submit"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
+              >
+                <RefreshCw className="h-4 w-4" />
+                AI再計算
+              </button>
+            </form>
+            <Link
+              href="/candidates/admin/new"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
+            >
+              <Plus className="h-4 w-4" />
+              新規登録
+            </Link>
+          </div>
         </header>
+
+        {notice ? (
+          <div className="mt-5 rounded border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm text-emerald-100">
+            {notice}
+          </div>
+        ) : null}
+
+        {error ? (
+          <div className="mt-5 rounded border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-100">
+            {error}
+          </div>
+        ) : null}
 
         <section className="grid gap-3 py-6 sm:grid-cols-3">
           <div className="rounded border border-amber-300/15 bg-black/35 p-5">

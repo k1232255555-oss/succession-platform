@@ -48,6 +48,9 @@ STRIPE_WEBHOOK_SECRET=
 STRIPE_STANDARD_PRICE_ID=
 STRIPE_PREMIUM_PRICE_ID=
 STRIPE_ENTERPRISE_PRICE_ID=
+
+OPENAI_API_KEY=
+OPENAI_MATCHING_MODEL=gpt-5.5-mini
 ```
 
 ## DBセットアップ
@@ -100,6 +103,13 @@ STRIPE_WEBHOOK_SECRET=
 STRIPE_STANDARD_PRICE_ID=
 STRIPE_PREMIUM_PRICE_ID=
 STRIPE_ENTERPRISE_PRICE_ID=
+```
+
+AIマッチングを使う場合は以下を設定します。未設定でも簡易スコアへフォールバックします。
+
+```bash
+OPENAI_API_KEY=
+OPENAI_MATCHING_MODEL=gpt-5.5-mini
 ```
 
 ### migration か db:push か
@@ -315,6 +325,39 @@ npm run db:seed
 - `ARCHIVED`: 非公開
 
 検索・フィルターは一覧ページのURLクエリとして保持されます。地域、希望業種、スキル、審査状態、注目候補フラグで絞り込みできます。
+
+## AIマッチング
+
+OpenAI APIを使って、企業と候補者の相性を分析します。結果は `AiMatchResult` テーブルに保存され、毎回APIを呼ばないようにキャッシュします。
+
+生成する内容:
+
+- 相性スコア 0〜100
+- マッチ理由
+- 強み
+- 懸念点
+- 推奨コメント
+- 期待できること
+- 注意点
+
+再計算される条件:
+
+- 企業プロフィールの `updatedAt` がAI結果より新しい
+- 候補者プロフィールの `updatedAt` がAI結果より新しい
+- prompt version が変わった
+- OWNERが候補者詳細または候補者管理画面から `AI再計算` を押した
+
+OpenAI APIが未設定または失敗した場合は、候補者プロフィールのスコア項目、希望業種、スキル、自己PR量をもとに簡易スコアを作成し、`isFallback=true` として保存します。
+
+本番設定:
+
+1. OpenAI PlatformでAPIキーを作成
+2. Vercel → Project → Settings → Environment Variables
+3. Productionに `OPENAI_API_KEY` を追加
+4. 必要に応じて `OPENAI_MATCHING_MODEL` を変更
+5. Redeploy
+
+候補者一覧では `AIおすすめ / 年齢 / 地域 / 経験年数` で並び替えできます。
 
 ## スカウト管理
 

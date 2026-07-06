@@ -16,10 +16,15 @@ import {
 } from "lucide-react";
 import {
   CandidateReviewStatus,
+  type Company,
   type Prisma,
-  type SuccessorCandidate,
 } from "@prisma/client";
 import { canManageCandidates, requireUser } from "@/lib/auth";
+import {
+  ensureAiMatch,
+  getFallbackMatch,
+  type CandidateWithMatch,
+} from "@/lib/ai-matching";
 import { formatPlanLimit, getPlanConfig } from "@/lib/billing";
 import {
   getCandidateScore,
@@ -42,8 +47,21 @@ function getParam(
   return Array.isArray(value) ? value[0] : value;
 }
 
-function CandidateCard({ candidate }: { candidate: SuccessorCandidate }) {
+function CandidateCard({
+  candidate,
+  company,
+}: {
+  candidate: CandidateWithMatch;
+  company: Pick<Company, "name" | "status">;
+}) {
   const score = getCandidateScore(candidate);
+  const aiMatch = candidate.aiMatchResults[0];
+  const fallbackMatch = getFallbackMatch({
+    company,
+    candidate,
+  });
+  const aiScore = aiMatch?.score ?? fallbackMatch.score;
+  const recommendation = aiMatch?.recommendation ?? fallbackMatch.recommendation;
 
   return (
     <article className="flex min-h-[390px] flex-col rounded border border-zinc-800 bg-zinc-950/85 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.34)] transition hover:border-amber-300/35 hover:shadow-[0_20px_70px_rgba(212,175,55,0.10)]">
@@ -79,6 +97,16 @@ function CandidateCard({ candidate }: { candidate: SuccessorCandidate }) {
       <p className="mt-5 line-clamp-4 text-sm leading-6 text-zinc-300">
         {candidate.selfPr}
       </p>
+
+      <div className="mt-5 rounded border border-amber-300/15 bg-amber-300/[0.06] p-4">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold text-amber-200">AIおすすめ</p>
+          <p className="text-2xl font-semibold text-amber-300">{aiScore}</p>
+        </div>
+        <p className="mt-2 line-clamp-2 text-xs leading-5 text-zinc-300">
+          {recommendation}
+        </p>
+      </div>
 
       <div className="mt-5 space-y-3">
         <div>
@@ -153,6 +181,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
   const industry = getParam(params, "industry")?.trim() ?? "";
   const skill = getParam(params, "skill")?.trim() ?? "";
   const status = getParam(params, "status")?.trim() ?? "";
+  const sort = getParam(params, "sort")?.trim() ?? "ai";
   const featured = getParam(params, "featured") === "on";
   const planConfig = getPlanConfig(user.company.billingPlan);
   const visibleCandidateLimit = planConfig.limits.visibleCandidates;
@@ -197,10 +226,27 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
     where.isFeatured = true;
   }
 
-  const [candidates, regions, industries, skills] = await Promise.all([
+  const orderBy: Prisma.SuccessorCandidateOrderByWithRelationInput[] =
+    sort === "age"
+      ? [{ age: "asc" }, { updatedAt: "desc" }]
+      : sort === "region"
+        ? [{ region: "asc" }, { updatedAt: "desc" }]
+        : sort === "experience"
+          ? [{ fieldExperienceLevel: "desc" }, { updatedAt: "desc" }]
+          : [{ isFeatured: "desc" }, { updatedAt: "desc" }];
+
+  const [rawCandidates, regions, industries, skills] = await Promise.all([
     prisma.successorCandidate.findMany({
       where,
-      orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
+      include: {
+        aiMatchResults: {
+          where: {
+            companyId: user.companyId,
+          },
+          take: 1,
+        },
+      },
+      orderBy,
       take: candidateTake,
     }),
     prisma.successorCandidate.findMany({
@@ -218,6 +264,29 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
       select: { skills: true },
     }),
   ]);
+
+  const candidates = await Promise.all(
+    rawCandidates.map(async (candidate) => {
+      const match = await ensureAiMatch({
+        company: user.company,
+        candidate,
+        existingMatch: candidate.aiMatchResults[0],
+      });
+
+      return {
+        ...candidate,
+        aiMatchResults: match ? [match] : [],
+      };
+    }),
+  );
+
+  if (sort === "ai") {
+    candidates.sort((first, second) => {
+      const firstScore = first.aiMatchResults[0]?.score ?? 0;
+      const secondScore = second.aiMatchResults[0]?.score ?? 0;
+      return secondScore - firstScore;
+    });
+  }
 
   const industryOptions = Array.from(
     new Set(industries.flatMap((item) => item.desiredIndustries)),
@@ -354,6 +423,20 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
                 ))}
               </select>
             </label>
+
+            <label>
+              <span className="text-xs font-medium text-zinc-500">並び替え</span>
+              <select
+                name="sort"
+                defaultValue={sort}
+                className="mt-2 h-11 w-full rounded border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none"
+              >
+                <option value="ai">AIおすすめ</option>
+                <option value="age">年齢</option>
+                <option value="region">地域</option>
+                <option value="experience">経験年数</option>
+              </select>
+            </label>
           </div>
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -401,7 +484,11 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
         {candidates.length > 0 ? (
           <section className="grid gap-4 py-5 md:grid-cols-2 xl:grid-cols-3">
             {candidates.map((candidate) => (
-              <CandidateCard key={candidate.id} candidate={candidate} />
+              <CandidateCard
+                key={candidate.id}
+                candidate={candidate}
+                company={user.company}
+              />
             ))}
           </section>
         ) : (

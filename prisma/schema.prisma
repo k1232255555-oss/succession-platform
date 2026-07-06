@@ -28,6 +28,7 @@ enum AuditAction {
   CANDIDATE_DELETED
   SCOUT_CREATED
   SCOUT_UPDATED
+  AI_MATCH_RECALCULATED
   STRIPE_CUSTOMER_LINKED
   BILLING_CHECKOUT_STARTED
   BILLING_PORTAL_STARTED
@@ -95,6 +96,7 @@ model Company {
   auditLogs                    AuditLog[]
   billingInvoices              BillingInvoice[]
   candidates                   SuccessorCandidate[]
+  aiMatchResults               AiMatchResult[]
   scoutRequests                ScoutRequest[]
   stripeWebhookEvents          StripeWebhookEvent[]
   users                        CompanyUser[]
@@ -215,12 +217,41 @@ model SuccessorCandidate {
   createdAt                 DateTime              @default(now())
   updatedAt                 DateTime              @updatedAt
   company                   Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  aiMatchResults            AiMatchResult[]
   scoutRequests             ScoutRequest[]
 
   @@index([companyId, reviewStatus])
   @@index([companyId, isFeatured])
   @@index([companyId, region])
   @@index([createdAt])
+}
+
+model AiMatchResult {
+  id                        String             @id @default(cuid())
+  companyId                 String
+  candidateId               String
+  score                     Int
+  reasons                   String[]
+  strengths                 String[]
+  concerns                  String[]
+  recommendation            String
+  expectedContribution      String[]
+  cautionPoints             String[]
+  model                     String
+  promptVersion             String             @default("2026-07-06")
+  isFallback                Boolean            @default(false)
+  companyProfileUpdatedAt   DateTime
+  candidateProfileUpdatedAt DateTime
+  calculatedAt              DateTime           @default(now())
+  createdAt                 DateTime           @default(now())
+  updatedAt                 DateTime           @updatedAt
+  company                   Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  candidate                 SuccessorCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, candidateId])
+  @@index([companyId, score])
+  @@index([candidateId])
+  @@index([calculatedAt])
 }
 
 model ScoutRequest {
