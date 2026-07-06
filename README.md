@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Legacy Gate
 
-## Getting Started
+次世代型・事業承継マッチングプラットフォームの企業側ダッシュボードです。Next.js App Router と Tailwind CSS で構築しています。
 
-First, run the development server:
+## 開発
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ローカルでは `http://localhost:3000` を開きます。ポートが使用中の場合は Next.js が別ポートを案内します。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 本番前チェック
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run verify
+```
 
-## Learn More
+このコマンドで lint、TypeScript、production build をまとめて確認します。
 
-To learn more about Next.js, take a look at the following resources:
+## 環境変数
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`.env.example` を参考に設定します。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+NEXT_PUBLIC_APP_URL=https://your-production-domain.example
+BASIC_AUTH_USER=your-user
+BASIC_AUTH_PASSWORD=your-password
+```
 
-## Deploy on Vercel
+`BASIC_AUTH_USER` と `BASIC_AUTH_PASSWORD` を両方設定すると、公開URL全体に Basic 認証がかかります。クローズドβや審査制プラットフォームの初期運用では、必ず本番環境に設定してください。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## デプロイ
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Vercel での推奨設定:
+
+- Framework Preset: Next.js
+- Build Command: `npm run build`
+- Install Command: `npm install`
+- Output Directory: `.next`
+- Environment Variables: `.env.example` の値を本番用に設定
+
+## 実装済み
+
+- 企業側ダッシュボード
+- スカウト進行状況
+- 後継者候補カード
+- 審査済みシグナル
+- メッセージプレビュー
+- Basic 認証ゲート
+- セキュリティヘッダー
+- 404、エラー、読み込み画面
+- robots によるクローラー除外
