@@ -241,7 +241,15 @@ npm run db:migrate
 - Output Directory: `.next`
 - Environment Variables: `.env.example` の値を本番用に設定
 
-`postinstall` で `prisma generate` が走るため、Vercel build 時にも Prisma Client が生成されます。
+`postinstall` と `build` の両方で `prisma generate` が走るため、Vercel build 時にも Prisma Client が生成されます。
+
+Vercel Runtime は Linux 系の `rhel-openssl-3.0.x` を使うため、`prisma/schema.prisma` の generator には以下を明示しています。
+
+```prisma
+binaryTargets = ["native", "rhel-openssl-3.0.x"]
+```
+
+これにより、ローカル用の `native` と Vercel本番用の Query Engine が生成対象になります。
 
 ## Vercel env pull で空文字になる場合
 
