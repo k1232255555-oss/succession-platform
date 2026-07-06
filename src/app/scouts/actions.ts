@@ -43,7 +43,7 @@ export async function createScoutRequestAction(
   if (!message || message.length < 20) {
     redirect(
       `/candidates/${candidateId}?error=${encodeURIComponent(
-        "スカウト文は20文字以上で入力してください。",
+        "対話申込文は20文字以上で入力してください。",
       )}`,
     );
   }
@@ -132,15 +132,15 @@ export async function createScoutRequestAction(
     excludeUserId: user.id,
     roles: [UserRole.OWNER, UserRole.ADMIN],
     type: NotificationType.SCOUT_CREATED,
-    subject: `新しいスカウトが送信されました: ${candidate.name}`,
+    subject: `新しい対話申請が送信されました: ${candidate.name}`,
     body: [
-      `${user.name}さんが${candidate.name}さんへスカウトを送信しました。`,
+      `${user.name}さんが${candidate.name}さんへ対話申請を送信しました。`,
       "",
       `候補者: ${candidate.name}`,
       `地域: ${candidate.region}`,
       `希望業種: ${candidate.desiredIndustries.join(", ") || "-"}`,
       "",
-      "管理画面でスカウト状況を確認してください。",
+      "管理画面で対話申請の状況を確認してください。",
     ].join("\n"),
     metadata: {
       scoutRequestId: scout.id,
@@ -151,7 +151,7 @@ export async function createScoutRequestAction(
 
   revalidatePath("/scouts");
   revalidatePath(`/candidates/${candidate.id}`);
-  redirect(`/scouts?notice=${encodeURIComponent("スカウトを送信しました。")}`);
+  redirect(`/scouts?notice=${encodeURIComponent("対話申請を送信しました。")}`);
 }
 
 export async function updateScoutRequestAction(
@@ -203,5 +203,5 @@ export async function updateScoutRequestAction(
 
   revalidatePath("/scouts");
   revalidatePath(`/candidates/${scout.candidateId}`);
-  redirect(`/scouts?notice=${encodeURIComponent("スカウト状況を更新しました。")}`);
+  redirect(`/scouts?notice=${encodeURIComponent("対話申請の状況を更新しました。")}`);
 }

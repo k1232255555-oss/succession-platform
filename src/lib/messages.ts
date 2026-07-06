@@ -16,7 +16,7 @@ export function getThreadSubject(input: {
   scout: Pick<ScoutRequest, "id">;
   candidate: Pick<SuccessorCandidate, "name" | "region">;
 }) {
-  return `${input.candidate.name}さんとのスカウト相談`;
+  return `${input.candidate.name}さんとの承継対話`;
 }
 
 export function getUnreadCount(

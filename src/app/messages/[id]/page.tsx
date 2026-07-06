@@ -100,7 +100,7 @@ export default async function MessageThreadPage({
             </h1>
             <p className="mt-3 text-sm leading-6 text-zinc-400">
               {thread.scoutRequest.candidate.name} /{" "}
-              {thread.scoutRequest.candidate.region} / スカウトID{" "}
+              {thread.scoutRequest.candidate.region} / 対話申請ID{" "}
               {thread.scoutRequest.id}
             </p>
           </div>

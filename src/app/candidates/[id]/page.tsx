@@ -237,13 +237,13 @@ export default async function CandidateDetailPage({
           <article className="rounded border border-amber-300/15 bg-amber-300/[0.06] p-5">
             <div className="flex items-center gap-2 text-amber-200">
               <Target className="h-4 w-4" />
-              <h2 className="text-sm font-semibold">総合熱量スコア</h2>
+              <h2 className="text-sm font-semibold">参考指標</h2>
             </div>
             <p className="mt-5 text-6xl font-semibold text-amber-300">
               {score}
             </p>
             <p className="mt-4 text-sm leading-6 text-zinc-300">
-              AI活用度、現場経験、承継意欲をもとにした社内評価指標です。
+              登録情報をもとにした参考指標です。面談や本人確認に代わるものではありません。
             </p>
           </article>
         </section>
@@ -271,13 +271,16 @@ export default async function CandidateDetailPage({
             <div>
               <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
                 <Sparkles className="h-4 w-4" />
-                <span>AI Match Analysis</span>
+                <span>Reference Analysis</span>
               </div>
               <h2 className="mt-2 text-2xl font-semibold text-white">
-                相性スコア {aiMatch.score}
+                参考スコア {aiMatch.score}
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-300">
                 {aiMatch.recommendation}
+              </p>
+              <p className="mt-3 max-w-3xl text-xs leading-5 text-zinc-500">
+                この分析は承継検討の参考情報です。M&A、親族承継、従業員承継を含む他の選択肢とあわせ、関係者との対話を通じて判断してください。
               </p>
               {aiMatch.isFallback ? (
                 <p className="mt-3 text-xs text-amber-200/80">
@@ -292,7 +295,7 @@ export default async function CandidateDetailPage({
                   className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  AI再計算
+                  参考分析を再計算
                 </button>
               </form>
             ) : null}
@@ -385,15 +388,15 @@ export default async function CandidateDetailPage({
           <article className="rounded border border-amber-300/15 bg-amber-300/[0.06] p-5">
             <div className="flex items-center gap-2 text-amber-200">
               <Handshake className="h-4 w-4" />
-              <h2 className="text-sm font-semibold">Scout Request</h2>
+              <h2 className="text-sm font-semibold">Dialogue Request</h2>
             </div>
             <h3 className="mt-3 text-xl font-semibold text-white">
-              スカウトを送る
+              対話を申し込む
             </h3>
 
             <div className="mt-4 rounded border border-zinc-800 bg-black/35 p-4">
               <p className="text-xs font-semibold text-amber-200">
-                AIコメント
+                参考メモ
               </p>
               <p className="mt-2 text-sm leading-6 text-zinc-300">
                 {aiMatch.recommendation}
@@ -410,14 +413,14 @@ export default async function CandidateDetailPage({
               <form action={scoutAction} className="mt-5 grid gap-4">
                 <label>
                   <span className="text-xs font-medium text-zinc-500">
-                    スカウト文
+                    対話申込文
                   </span>
                   <textarea
                     name="message"
                     rows={6}
                     required
                     minLength={20}
-                    placeholder="事業承継の背景、候補者に期待したい役割、初回面談で話したいことを入力してください。"
+                    placeholder="事業承継の背景、関係者に配慮したい点、初回対話で確認したいことを入力してください。"
                     className="mt-2 w-full rounded border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-amber-300/50"
                   />
                 </label>
@@ -437,19 +440,19 @@ export default async function CandidateDetailPage({
                     name="feeAcknowledged"
                     className="mt-1 h-4 w-4 accent-amber-300"
                   />
-                  β期間中は無料でスカウトを送信できることを確認しました。
+                  β期間中は無料で対話申請できることを確認しました。
                 </label>
                 <button
                   type="submit"
                   className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
                 >
                   <Handshake className="h-4 w-4" />
-                  スカウトを送信
+                  対話を申し込む
                 </button>
               </form>
             ) : (
               <p className="mt-5 text-sm leading-6 text-zinc-400">
-                VIEWER権限ではスカウト送信はできません。必要な場合はOWNERまたはADMINに依頼してください。
+                VIEWER権限では対話申請はできません。必要な場合はOWNERまたはADMINに依頼してください。
               </p>
             )}
           </article>
@@ -457,10 +460,10 @@ export default async function CandidateDetailPage({
           <article className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <CalendarClock className="h-4 w-4" />
-              <span>Scout History</span>
+              <span>Dialogue History</span>
             </div>
             <h3 className="mt-3 text-xl font-semibold text-white">
-              スカウト履歴
+              対話申請履歴
             </h3>
 
             <div className="mt-5 space-y-3">
@@ -517,7 +520,7 @@ export default async function CandidateDetailPage({
 
               {scoutRequests.length === 0 ? (
                 <p className="rounded border border-zinc-800 bg-black/35 p-4 text-sm text-zinc-400">
-                  まだスカウト履歴はありません。
+                  まだ対話申請履歴はありません。
                 </p>
               ) : null}
             </div>

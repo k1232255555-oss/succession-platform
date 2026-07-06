@@ -10,7 +10,7 @@ export default function ContactPage() {
           className="inline-flex items-center gap-2 text-sm font-medium text-amber-200/80 transition hover:text-amber-100"
         >
           <ArrowLeft className="h-4 w-4" />
-          Legacy Gateへ戻る
+          Succession Clubへ戻る
         </Link>
 
         <section className="mt-8 rounded border border-zinc-800 bg-black/35 p-6">

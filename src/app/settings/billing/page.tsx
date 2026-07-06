@@ -102,7 +102,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
       limit: currentPlan.limits.visibleCandidates,
     },
     {
-      label: "今月のスカウト",
+      label: "今月の対話申請",
       value: monthlyScouts,
       limit: currentPlan.limits.scoutsPerMonth,
     },
@@ -161,7 +161,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
 
         {!stripeBillingEnabled ? (
           <div className="mt-5 rounded border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
-            現在はβ期間中のため無料運用中です。AIマッチング、スカウト、メッセージは追加課金なしで利用できます。
+            現在はβ期間中のため無料運用中です。参考分析、対話申請、メッセージは追加課金なしで利用できます。
           </div>
         ) : !stripeConfigured ? (
           <div className="mt-5 rounded border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
@@ -268,7 +268,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
                     候補者表示: {formatPlanLimit(plan.limits.visibleCandidates)}
                   </p>
                   <p>
-                    月間スカウト: {formatPlanLimit(plan.limits.scoutsPerMonth)}
+                    月間対話申請: {formatPlanLimit(plan.limits.scoutsPerMonth)}
                   </p>
                 </div>
 

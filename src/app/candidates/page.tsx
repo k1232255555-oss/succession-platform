@@ -100,7 +100,9 @@ function CandidateCard({
 
       <div className="mt-5 rounded border border-amber-300/15 bg-amber-300/[0.06] p-4">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold text-amber-200">AIおすすめ</p>
+          <p className="text-xs font-semibold text-amber-200">
+            参考分析
+          </p>
           <p className="text-2xl font-semibold text-amber-300">{aiScore}</p>
         </div>
         <p className="mt-2 line-clamp-2 text-xs leading-5 text-zinc-300">
@@ -166,7 +168,7 @@ function CandidateCard({
           <ArrowUpRight className="h-4 w-4" />
         </Link>
         <p className="mt-3 text-center text-xs text-zinc-500">
-          総合熱量スコア {score}
+          参考指標 {score}
         </p>
       </div>
     </article>
@@ -310,10 +312,10 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
               Dashboard
             </Link>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              後継者候補を探す
+              承継の選択肢を探す
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              審査済みプロフィールを、地域・希望業種・スキル・熱量の観点から絞り込めます。
+              M&A、親族承継、従業員承継に加わるもう一つの選択肢として、審査済みプロフィールを確認できます。
             </p>
           </div>
 
@@ -431,7 +433,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
                 defaultValue={sort}
                 className="mt-2 h-11 w-full rounded border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none"
               >
-                <option value="ai">AIおすすめ</option>
+                <option value="ai">参考分析順</option>
                 <option value="age">年齢</option>
                 <option value="region">地域</option>
                 <option value="experience">経験年数</option>

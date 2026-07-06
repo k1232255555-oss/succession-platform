@@ -17,11 +17,11 @@ const roleDescriptions = [
   },
   {
     role: "MEMBER",
-    description: "候補者閲覧、スカウト、メッセージ対応が可能。",
+    description: "候補者閲覧、対話申請、メッセージ対応が可能。",
   },
   {
     role: "VIEWER",
-    description: "閲覧のみ。スカウトや設定変更は不可。",
+    description: "閲覧のみ。対話申請や設定変更は不可。",
   },
 ];
 

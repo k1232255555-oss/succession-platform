@@ -58,7 +58,7 @@ export async function recalculateCandidateAiMatchAction(candidateId: string) {
   revalidatePath("/candidates");
   revalidatePath(`/candidates/${candidate.id}`);
   revalidatePath("/candidates/admin");
-  redirect(`/candidates/${candidate.id}?notice=AI分析を再計算しました。`);
+  redirect(`/candidates/${candidate.id}?notice=参考分析を再計算しました。`);
 }
 
 export async function recalculateAllCandidateAiMatchesAction() {
@@ -116,7 +116,7 @@ export async function recalculateAllCandidateAiMatchesAction() {
   revalidatePath("/candidates/admin");
   redirect(
     `/candidates/admin?notice=${encodeURIComponent(
-      `AI分析を${candidates.length}件再計算しました。`,
+      `参考分析を${candidates.length}件再計算しました。`,
     )}`,
   );
 }

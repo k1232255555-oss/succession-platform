@@ -56,7 +56,7 @@ export const billingPlans: BillingPlanConfig[] = [
   {
     plan: BillingPlan.PREMIUM,
     name: "Premium",
-    description: "複数部門でスカウトと面談を進める成長企業向けプラン。",
+    description: "複数の関係者で対話申請と面談を進める組織向けプラン。",
     priceLabel: "月額 Premium",
     stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID?.trim() || undefined,
     limits: {
@@ -118,7 +118,7 @@ export function getEffectivePlanConfig(plan: BillingPlan) {
 
   return {
     ...getPlanConfig(BillingPlan.FREE),
-    description: "β期間中は無料で候補者検索、AIマッチング、スカウト、メッセージを利用できます。",
+    description: "β期間中は無料で候補者検索、参考分析、対話申請、メッセージを利用できます。",
     priceLabel: "β期間中無料",
     limits: {
       users: "unlimited",

@@ -108,7 +108,7 @@ export default async function MessagesPage({ searchParams }: PageProps) {
               メッセージ
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              スカウトごとの相談スレッドを確認できます。候補者側・運営側連携に拡張しやすいメッセージ基盤です。
+              対話申請ごとの相談スレッドを確認できます。候補者側・運営側連携に拡張しやすいメッセージ基盤です。
             </p>
           </div>
 
@@ -116,7 +116,7 @@ export default async function MessagesPage({ searchParams }: PageProps) {
             href="/scouts"
             className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
           >
-            スカウト管理
+            対話申請管理
             <ArrowUpRight className="h-4 w-4" />
           </Link>
         </header>
@@ -237,7 +237,7 @@ export default async function MessagesPage({ searchParams }: PageProps) {
                 メッセージスレッドはまだありません
               </h2>
               <p className="mt-3 text-sm text-zinc-400">
-                スカウト管理または候補者詳細からスレッドを開始できます。
+                対話申請管理または候補者詳細からスレッドを開始できます。
               </p>
             </section>
           ) : null}

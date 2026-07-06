@@ -24,7 +24,7 @@ export default async function LoginPage() {
               Succession Club
             </p>
             <h1 className="text-lg font-semibold tracking-wide text-white">
-              Legacy Gate
+              未来へ、事業をつなぐ。
             </h1>
           </div>
         </div>
@@ -35,10 +35,10 @@ export default async function LoginPage() {
             <span>完全審査制ログイン</span>
           </div>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">
-            企業アカウントでログイン
+            メンバーアカウントでログイン
           </h2>
           <p className="mt-3 text-sm leading-6 text-zinc-400">
-            事業承継候補者の情報は承認済みメンバーにのみ公開されます。
+            承継に関わる情報は、承認済みメンバーにのみ必要な範囲で公開されます。
           </p>
         </div>
 

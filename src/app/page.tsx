@@ -34,11 +34,13 @@ export const dynamic = "force-dynamic";
 const navItems = [
   { label: "ダッシュボード", href: "/", icon: Home, active: true },
   { label: "後継者候補を探す", href: "/candidates", icon: UserRoundSearch, active: false },
-  { label: "スカウト管理", href: "/scouts", icon: Handshake, active: false },
+  { label: "対話申請", href: "/scouts", icon: Handshake, active: false },
   { label: "メッセージ", href: "/messages", icon: MessageCircle, active: false },
   { label: "決済管理", href: "/settings/billing", icon: CreditCard, active: false },
   { label: "設定", href: "/settings", icon: Settings, active: false },
 ];
+
+const foundingMemberLimit = 50;
 
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -144,16 +146,20 @@ export default async function DashboardPage() {
       note: "審査完了後に順次公開",
     },
     {
-      label: "今月の新規マッチング",
+      label: "今月の承継対話",
       value: monthlyMatchingCount,
       suffix: "件",
       note: "初期メンバー募集中",
     },
   ];
+  const foundingMemberRemaining = Math.max(
+    foundingMemberLimit - companyCount,
+    0,
+  );
 
   const pipelineItems = [
     {
-      label: "スカウト送信",
+      label: "対話申請",
       value: monthlyScoutCount,
       note: "候補者公開後に利用できます",
       icon: Handshake,
@@ -161,7 +167,7 @@ export default async function DashboardPage() {
     {
       label: "面談調整中",
       value: meetingScoutCount,
-      note: "スカウト承諾後に進行",
+      note: "承諾後に進行",
       icon: CalendarClock,
     },
     {
@@ -195,7 +201,7 @@ export default async function DashboardPage() {
                     Succession Club
                   </p>
                   <h1 className="text-lg font-semibold tracking-wide text-white">
-                    Legacy Gate
+                    未来へ、事業をつなぐ。
                   </h1>
                 </div>
               </div>
@@ -234,10 +240,10 @@ export default async function DashboardPage() {
           <div className="mt-8 hidden rounded border border-amber-300/15 bg-zinc-950/80 p-4 lg:block">
             <div className="flex items-center gap-2 text-amber-200">
               <ShieldCheck className="h-4 w-4" />
-              <p className="text-sm font-semibold">完全審査制</p>
+              <p className="text-sm font-semibold">中立・完全審査制</p>
             </div>
             <p className="mt-3 text-xs leading-6 text-zinc-400">
-              企業情報と候補者プロフィールは承認済みメンバーにのみ公開されます。
+              M&A、親族承継、従業員承継を否定せず、もう一つの選択肢として事業承継を支えます。
             </p>
           </div>
         </aside>
@@ -247,13 +253,13 @@ export default async function DashboardPage() {
             <div>
               <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
                 <Sparkles className="h-4 w-4" />
-                <span>Enterprise Dashboard</span>
+                <span>Succession Club</span>
               </div>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                次の継承者候補を見つける
+                未来へ、事業をつなぐ。
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                資金力よりも、熱量・視点・現場に飛び込む覚悟を軸に、審査済みの若者と出会えます。
+                企業オーナー、後継者、従業員、家族にとって納得できる承継の選択肢を、誠実に増やしていきます。
               </p>
             </div>
 
@@ -284,14 +290,23 @@ export default async function DashboardPage() {
           </header>
 
           <section className="mt-6 rounded border border-zinc-800 bg-black/30 p-4">
-            <p className="text-sm text-zinc-400">
-              ログイン中:{" "}
-              <span className="font-semibold text-zinc-100">{user.name}</span>
-              {" / "}
-              <span className="text-amber-200">{user.company.name}</span>
-              {" / "}
-              <span className="text-zinc-300">{user.role}</span>
-            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-zinc-400">
+                ログイン中:{" "}
+                <span className="font-semibold text-zinc-100">{user.name}</span>
+                {" / "}
+                <span className="text-amber-200">{user.company.name}</span>
+                {" / "}
+                <span className="text-zinc-300">{user.role}</span>
+              </p>
+              <p className="text-sm text-zinc-400">
+                Founding Members 残り{" "}
+                <span className="font-semibold text-amber-200">
+                  {foundingMemberRemaining.toLocaleString("ja-JP")}
+                </span>
+                社
+              </p>
+            </div>
           </section>
 
           <section className="grid gap-3 py-6 sm:grid-cols-3">
@@ -322,10 +337,10 @@ export default async function DashboardPage() {
                 <div>
                   <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
                     <TrendingUp className="h-4 w-4" />
-                    <span>Scout Pipeline</span>
+                    <span>Dialogue Pipeline</span>
                   </div>
                   <h3 className="mt-2 text-xl font-semibold text-white">
-                    承継候補者との進行状況
+                    承継に向けた対話の進行状況
                   </h3>
                 </div>
                 <p className="text-sm text-zinc-400">
@@ -364,7 +379,7 @@ export default async function DashboardPage() {
             <div className="rounded border border-amber-300/15 bg-amber-300/[0.06] p-5">
               <div className="flex items-center gap-2 text-amber-200">
                 <LockKeyhole className="h-4 w-4" />
-                <h3 className="text-sm font-semibold">審査済みシグナル</h3>
+                <h3 className="text-sm font-semibold">β運営方針</h3>
               </div>
               <div className="mt-4 space-y-3">
                 <p className="text-sm leading-6 text-zinc-300">
@@ -374,7 +389,7 @@ export default async function DashboardPage() {
                   審査済み候補者のみ順次公開し、実績がない数字は表示しません。
                 </p>
                 <p className="text-sm leading-6 text-zinc-300">
-                  β参加企業は、AIマッチング・スカウト・メッセージを無料で利用できます。
+                  AIは判断材料の一つです。承継の意思決定を代替するものではありません。
                 </p>
               </div>
             </div>
@@ -387,7 +402,7 @@ export default async function DashboardPage() {
                 <span>Successor Candidates</span>
               </div>
               <h3 className="mt-2 text-2xl font-semibold text-white">
-                熱量で選ばれた後継者候補
+                審査中・公開済みの承継候補者
               </h3>
             </div>
 
@@ -412,7 +427,7 @@ export default async function DashboardPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-medium uppercase tracking-[0.24em] text-amber-300/70">
-                      Verified Talent
+                      Reviewed Profile
                     </p>
                     <h4 className="mt-3 text-xl font-semibold text-white">
                       {candidate.name} / {candidate.age}歳
@@ -450,7 +465,7 @@ export default async function DashboardPage() {
                   <div className="mb-4 flex items-center justify-between rounded border border-zinc-800 bg-black/35 px-3 py-3">
                     <div className="flex items-center gap-2 text-sm text-zinc-300">
                       <Target className="h-4 w-4 text-amber-300" />
-                      <span>熱量スコア</span>
+                      <span>参考指標</span>
                     </div>
                     <div className="flex items-center gap-1 text-amber-300">
                       <Zap className="h-4 w-4" />
@@ -472,7 +487,7 @@ export default async function DashboardPage() {
                       type="button"
                       className="inline-flex min-h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 py-3 text-sm font-bold text-black shadow-[0_0_28px_rgba(251,191,36,0.24)] transition hover:bg-amber-200"
                     >
-                      スカウトする
+                      対話を申し込む
                       <span className="text-xs font-semibold">
                         （β期間中無料）
                       </span>
@@ -484,7 +499,7 @@ export default async function DashboardPage() {
             {successorCandidates.length === 0 ? (
               <div className="rounded border border-zinc-800 bg-zinc-950/85 p-6 md:col-span-2 xl:col-span-4">
                 <p className="text-sm leading-6 text-zinc-400">
-                  現在、審査済み候補者を準備中です。候補者登録・審査が完了次第、順次公開されます。β参加企業は無料で先行登録できます。
+                  現在、審査済み候補者を準備中です。候補者登録・審査が完了次第、順次公開されます。Founding Membersは無料で先行登録できます。
                 </p>
               </div>
             ) : null}
@@ -502,7 +517,7 @@ export default async function DashboardPage() {
                     <span>Message Room</span>
                   </div>
                   <h3 className="mt-2 text-xl font-semibold text-white">
-                    返信待ちの候補者
+                    最近の承継対話
                   </h3>
                 </div>
                 <Link
@@ -543,7 +558,7 @@ export default async function DashboardPage() {
                       メッセージはまだありません
                     </p>
                     <p className="mt-2 text-sm leading-6 text-zinc-400">
-                      スカウト後にスレッドを開始すると、ここに実データのみ表示されます。
+                      対話スレッドを開始すると、ここに実データのみ表示されます。
                     </p>
                   </div>
                 ) : null}
@@ -558,10 +573,10 @@ export default async function DashboardPage() {
                     <span>Next Best Action</span>
                   </div>
                   <h3 className="mt-2 text-xl font-semibold text-white">
-                    候補者公開後にスカウトから会話を開始
+                    候補者公開後に、丁寧な対話から開始
                   </h3>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                    候補者検索、AIマッチング、スカウト、メッセージまでβ期間中は無料で利用できます。
+                    Founding Membersは、候補者検索、参考分析、対話申請、メッセージをβ期間中無料で利用できます。
                   </p>
                 </div>
                 <Link

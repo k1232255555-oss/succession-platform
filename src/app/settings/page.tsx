@@ -20,7 +20,7 @@ const settingLinks = [
   {
     href: "/settings/billing",
     label: "決済とプラン",
-    description: "Stripe Checkout、Customer Portal、請求履歴、利用上限を確認します。",
+    description: "β無料運用、将来のStripe課金、請求履歴、利用上限を確認します。",
     icon: CreditCard,
   },
   {
@@ -32,7 +32,7 @@ const settingLinks = [
   {
     href: "/settings/audit",
     label: "監査ログ",
-    description: "ログイン、候補者、スカウト、決済、通知の操作履歴を検索します。",
+    description: "ログイン、候補者、対話申請、決済、通知の操作履歴を検索します。",
     icon: FileSearch,
   },
   {

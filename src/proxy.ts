@@ -7,7 +7,7 @@ function unauthorized() {
   return new NextResponse("Authentication required.", {
     status: 401,
     headers: {
-      "WWW-Authenticate": 'Basic realm="Legacy Gate"',
+      "WWW-Authenticate": 'Basic realm="Succession Club"',
     },
   });
 }

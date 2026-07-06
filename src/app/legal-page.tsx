@@ -23,7 +23,7 @@ export function LegalPage({
           className="inline-flex items-center gap-2 text-sm font-medium text-amber-200/80 transition hover:text-amber-100"
         >
           <ArrowLeft className="h-4 w-4" />
-          Legacy Gateへ戻る
+          Succession Clubへ戻る
         </Link>
 
         <header className="mt-8 border-b border-zinc-800 pb-8">

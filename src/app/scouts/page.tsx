@@ -78,10 +78,10 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
               Dashboard
             </Link>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              スカウト進行管理
+              対話申請の進行管理
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              候補者へのスカウト送信履歴、面談調整、承諾・辞退までの状態を管理します。
+              候補者との初回対話、面談調整、承諾・辞退までの状態を丁寧に管理します。
             </p>
           </div>
 
@@ -260,10 +260,10 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
             <section className="rounded border border-zinc-800 bg-black/35 p-8 text-center">
               <Handshake className="mx-auto h-8 w-8 text-amber-300" />
               <h2 className="mt-4 text-xl font-semibold text-white">
-                スカウトはまだありません
+            対話申請はまだありません
               </h2>
               <p className="mt-3 text-sm text-zinc-400">
-                候補者詳細ページからスカウトを送信できます。
+                候補者詳細ページから対話申請を開始できます。
               </p>
             </section>
           ) : null}

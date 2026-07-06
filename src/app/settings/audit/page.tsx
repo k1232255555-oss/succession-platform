@@ -110,7 +110,7 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
               監査ログ検索
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              ログイン、ユーザー管理、候補者管理、スカウト操作を横断して確認できます。
+              ログイン、ユーザー管理、候補者管理、対話申請を横断して確認できます。
             </p>
           </div>
 
