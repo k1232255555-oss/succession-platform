@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CreditCard, FileSearch, UsersRound } from "lucide-react";
+import { Bell, CreditCard, FileSearch, UsersRound } from "lucide-react";
 import { formatAuditAction } from "@/lib/audit";
 import { requireRole, requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -71,6 +71,13 @@ export default async function SecuritySettingsPage() {
             >
               <FileSearch className="h-4 w-4" />
               監査ログ検索
+            </Link>
+            <Link
+              href="/settings/notifications"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
+            >
+              <Bell className="h-4 w-4" />
+              通知ログ
             </Link>
             <Link
               href="/settings/users"

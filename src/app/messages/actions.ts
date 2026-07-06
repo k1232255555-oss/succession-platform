@@ -2,10 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { AuditAction, MessageThreadStatus } from "@prisma/client";
+import {
+  AuditAction,
+  MessageThreadStatus,
+  NotificationType,
+  UserRole,
+} from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
 import { getRequestContext, requireUser } from "@/lib/auth";
 import { getThreadSubject, parseMessageBody } from "@/lib/messages";
+import { notifyCompanyUsers } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 async function getAccessibleThread(threadId: string, companyId: string) {
@@ -180,6 +186,29 @@ export async function sendMessageAction(threadId: string, formData: FormData) {
     },
   });
 
+  await notifyCompanyUsers({
+    companyId: user.companyId,
+    excludeUserId: user.id,
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.MEMBER],
+    type: NotificationType.MESSAGE_SENT,
+    subject: `新着メッセージ: ${thread.subject}`,
+    body: [
+      `${user.name}さんがメッセージを送信しました。`,
+      "",
+      `件名: ${thread.subject}`,
+      `候補者: ${thread.scoutRequest.candidate.name}`,
+      "",
+      body,
+    ].join("\n"),
+    metadata: {
+      threadId: thread.id,
+      messageId: message.id,
+      scoutRequestId: thread.scoutRequestId,
+      candidateId: thread.scoutRequest.candidateId,
+      actorId: user.id,
+    },
+  });
+
   revalidatePath("/messages");
   revalidatePath(`/messages/${thread.id}`);
   redirect(`/messages/${thread.id}`);
@@ -243,6 +272,25 @@ export async function closeMessageThreadAction(threadId: string) {
     metadata: {
       threadId: thread.id,
       scoutRequestId: thread.scoutRequestId,
+    },
+  });
+
+  await notifyCompanyUsers({
+    companyId: user.companyId,
+    excludeUserId: user.id,
+    roles: [UserRole.OWNER, UserRole.ADMIN],
+    type: NotificationType.MESSAGE_THREAD_CLOSED,
+    subject: `メッセージスレッドがクローズされました: ${thread.subject}`,
+    body: [
+      `${user.name}さんがメッセージスレッドをクローズしました。`,
+      "",
+      `件名: ${thread.subject}`,
+      `候補者: ${thread.scoutRequest.candidate.name}`,
+    ].join("\n"),
+    metadata: {
+      threadId: thread.id,
+      scoutRequestId: thread.scoutRequestId,
+      actorId: user.id,
     },
   });
 

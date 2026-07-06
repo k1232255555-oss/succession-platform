@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { AuditAction } from "@prisma/client";
+import { AuditAction, NotificationType, UserRole } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
 import {
   canScoutCandidates,
@@ -14,6 +14,7 @@ import {
   hasActiveBillingAccess,
   isWithinLimit,
 } from "@/lib/billing";
+import { notifyCompanyUsers } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { parseMeetingDate, parseScoutStatus } from "@/lib/scouts";
 
@@ -120,6 +121,28 @@ export async function createScoutRequestAction(
       candidateId: candidate.id,
       candidateName: candidate.name,
       feeAcknowledged,
+    },
+  });
+
+  await notifyCompanyUsers({
+    companyId: user.companyId,
+    excludeUserId: user.id,
+    roles: [UserRole.OWNER, UserRole.ADMIN],
+    type: NotificationType.SCOUT_CREATED,
+    subject: `新しいスカウトが送信されました: ${candidate.name}`,
+    body: [
+      `${user.name}さんが${candidate.name}さんへスカウトを送信しました。`,
+      "",
+      `候補者: ${candidate.name}`,
+      `地域: ${candidate.region}`,
+      `希望業種: ${candidate.desiredIndustries.join(", ") || "-"}`,
+      "",
+      "管理画面でスカウト状況を確認してください。",
+    ].join("\n"),
+    metadata: {
+      scoutRequestId: scout.id,
+      candidateId: candidate.id,
+      actorId: user.id,
     },
   });
 

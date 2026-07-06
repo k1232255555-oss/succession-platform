@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { AuditAction, BillingSubscriptionStatus } from "@prisma/client";
+import {
+  AuditAction,
+  BillingSubscriptionStatus,
+  NotificationType,
+  UserRole,
+} from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
 import {
   getPlanFromPriceId,
@@ -8,6 +13,7 @@ import {
   recordInvoiceFromStripe,
   syncSubscriptionFromStripe,
 } from "@/lib/billing";
+import { notifyCompanyUsers } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -170,6 +176,32 @@ async function handleInvoiceEvent(invoice: Stripe.Invoice, paymentFailed = false
       action: AuditAction.BILLING_PAYMENT_FAILED,
       companyId: billingInvoice.companyId,
       metadata: {
+        stripeInvoiceId: invoice.id,
+        amountDue: invoice.amount_due,
+        currency: invoice.currency,
+      },
+    });
+
+    await notifyCompanyUsers({
+      companyId: billingInvoice.companyId,
+      roles: [UserRole.OWNER, UserRole.ADMIN],
+      type: NotificationType.BILLING_PAYMENT_FAILED,
+      subject: "決済に失敗しました",
+      body: [
+        "サブスクリプションの決済に失敗しました。",
+        "",
+        `請求番号: ${billingInvoice.number ?? invoice.id}`,
+        `金額: ${invoice.amount_due} ${invoice.currency.toUpperCase()}`,
+        billingInvoice.hostedInvoiceUrl
+          ? `請求URL: ${billingInvoice.hostedInvoiceUrl}`
+          : "",
+        "",
+        "Billing画面またはStripe Customer Portalで支払い状況を確認してください。",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      metadata: {
+        billingInvoiceId: billingInvoice.id,
         stripeInvoiceId: invoice.id,
         amountDue: invoice.amount_due,
         currency: invoice.currency,
