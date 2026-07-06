@@ -4,6 +4,10 @@ import { redirect } from "next/navigation";
 import { AuditAction } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
 import { createSession, getRequestContext } from "@/lib/auth";
+import {
+  isLoginRateLimited,
+  recordLoginAttempt,
+} from "@/lib/login-attempts";
 import { verifyPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 
@@ -27,6 +31,24 @@ export async function loginAction(
     };
   }
 
+  const isRateLimited = await isLoginRateLimited({
+    email,
+    ipAddress: requestContext.ipAddress,
+  });
+
+  if (isRateLimited) {
+    await recordLoginAttempt({
+      email,
+      ipAddress: requestContext.ipAddress,
+      success: false,
+    });
+
+    return {
+      error:
+        "ログイン試行回数が上限に達しました。15分ほど待ってから再試行してください。",
+    };
+  }
+
   const user = await prisma.companyUser.findUnique({
     where: {
       email,
@@ -37,6 +59,12 @@ export async function loginAction(
   });
 
   if (!user || !user.isActive || !verifyPassword(password, user.passwordHash)) {
+    await recordLoginAttempt({
+      email,
+      ipAddress: requestContext.ipAddress,
+      success: false,
+    });
+
     if (user) {
       await writeAuditLog({
         action: AuditAction.LOGIN_FAILED,
@@ -53,6 +81,12 @@ export async function loginAction(
       error: "メールアドレスまたはパスワードが正しくありません。",
     };
   }
+
+  await recordLoginAttempt({
+    email,
+    ipAddress: requestContext.ipAddress,
+    success: true,
+  });
 
   await prisma.companyUser.update({
     where: {

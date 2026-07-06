@@ -114,6 +114,18 @@ model AuditLog {
   @@index([action])
 }
 
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ipAddress String?
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@index([success, createdAt])
+}
+
 model SuccessorCandidate {
   id                        String                @id @default(cuid())
   companyId                 String
