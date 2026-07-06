@@ -1,7 +1,27 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://legacy-gate.example.com";
+function getAppUrl() {
+  const rawUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (!rawUrl) {
+    return "http://localhost:3000";
+  }
+
+  try {
+    const url = new URL(rawUrl);
+
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return url.origin;
+    }
+  } catch {
+    return "http://localhost:3000";
+  }
+
+  return "http://localhost:3000";
+}
+
+const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),

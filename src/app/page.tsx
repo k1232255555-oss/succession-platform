@@ -23,12 +23,16 @@ import {
   UsersRound,
   Zap,
 } from "lucide-react";
+import { LogoutButton } from "@/app/logout-button";
+import { requireUser } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 const navItems = [
-  { label: "ダッシュボード", icon: Home, active: true },
-  { label: "後継者候補を探す", icon: UserRoundSearch, active: false },
-  { label: "メッセージ", icon: MessageCircle, active: false },
-  { label: "設定", icon: Settings, active: false },
+  { label: "ダッシュボード", href: "/", icon: Home, active: true },
+  { label: "後継者候補を探す", href: "#candidates", icon: UserRoundSearch, active: false },
+  { label: "メッセージ", href: "#messages", icon: MessageCircle, active: false },
+  { label: "設定", href: "/settings/security", icon: Settings, active: false },
 ];
 
 const tractionStats = [
@@ -102,7 +106,9 @@ const messagePreviews = [
   },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await requireUser();
+
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.13),transparent_34%),linear-gradient(135deg,#09090b_0%,#18181b_48%,#030303_100%)]" />
@@ -142,7 +148,7 @@ export default function DashboardPage() {
               return (
                 <a
                   key={item.label}
-                  href="#"
+                  href={item.href}
                   className={`group flex min-w-max items-center gap-3 rounded px-4 py-3 text-sm font-medium transition ${
                     item.active
                       ? "border border-amber-300/30 bg-amber-300/10 text-amber-200 shadow-[0_0_26px_rgba(212,175,55,0.12)]"
@@ -204,8 +210,20 @@ export default function DashboardPage() {
                 <Handshake className="h-4 w-4" />
                 優先スカウト
               </button>
+              <LogoutButton />
             </div>
           </header>
+
+          <section className="mt-6 rounded border border-zinc-800 bg-black/30 p-4">
+            <p className="text-sm text-zinc-400">
+              ログイン中:{" "}
+              <span className="font-semibold text-zinc-100">{user.name}</span>
+              {" / "}
+              <span className="text-amber-200">{user.company.name}</span>
+              {" / "}
+              <span className="text-zinc-300">{user.role}</span>
+            </p>
+          </section>
 
           <section className="grid gap-3 py-6 sm:grid-cols-3">
             {tractionStats.map((stat) => (
@@ -303,7 +321,10 @@ export default function DashboardPage() {
             </button>
           </section>
 
-          <section className="grid gap-4 py-5 md:grid-cols-2 xl:grid-cols-4">
+          <section
+            id="candidates"
+            className="grid gap-4 py-5 md:grid-cols-2 xl:grid-cols-4"
+          >
             {candidates.map((candidate) => (
               <article
                 key={candidate.name}
@@ -383,7 +404,10 @@ export default function DashboardPage() {
             ))}
           </section>
 
-          <section className="grid gap-4 pb-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <section
+            id="messages"
+            className="grid gap-4 pb-8 lg:grid-cols-[0.9fr_1.1fr]"
+          >
             <div className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>

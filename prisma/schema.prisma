@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum AuditAction {
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGOUT
+  SESSION_REVOKED
+  USER_CREATED
+  USER_UPDATED
+  STRIPE_CUSTOMER_LINKED
+}
+
+model Company {
+  id                   String        @id @default(cuid())
+  name                 String
+  slug                 String        @unique
+  status               String        @default("active")
+  stripeCustomerId     String?       @unique
+  stripeSubscriptionId String?       @unique
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  auditLogs            AuditLog[]
+  users                CompanyUser[]
+}
+
+model CompanyUser {
+  id           String     @id @default(cuid())
+  companyId    String
+  email        String     @unique
+  name         String
+  role         UserRole   @default(MEMBER)
+  passwordHash String
+  isActive     Boolean    @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  auditLogs    AuditLog[]
+  company      Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  sessions     Session[]
+
+  @@index([companyId])
+  @@index([role])
+}
+
+model Session {
+  id         String      @id @default(cuid())
+  tokenHash  String      @unique
+  userId     String
+  expiresAt  DateTime
+  createdAt  DateTime    @default(now())
+  lastSeenAt DateTime    @default(now())
+  user       CompanyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  companyId String
+  actorId   String?
+  action    AuditAction
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+  actor     CompanyUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+  @@index([actorId])
+  @@index([action])
+}

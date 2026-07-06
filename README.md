@@ -1,6 +1,18 @@
 # Legacy Gate
 
-次世代型・事業承継マッチングプラットフォームの企業側ダッシュボードです。Next.js App Router と Tailwind CSS で構築しています。
+次世代型・事業承継マッチングプラットフォームの企業側ダッシュボードです。Next.js App Router、Tailwind CSS、Prisma、PostgreSQL を前提にしています。
+
+## 現在の構成
+
+- Next.js App Router
+- Vercel運用前提
+- Basic認証ゲートは `src/proxy.ts` で維持
+- アプリ内ログインは HTTP only Cookie + DB session
+- DBは PostgreSQL
+- ORMは Prisma 6系
+- 権限は `OWNER / ADMIN / MEMBER / VIEWER`
+- 監査ログは `AuditLog`
+- Stripe連携用に会社レコードへ `stripeCustomerId` / `stripeSubscriptionId` を保持
 
 ## 開発
 
@@ -8,8 +20,6 @@
 npm install
 npm run dev
 ```
-
-ローカルでは `http://localhost:3000` を開きます。ポートが使用中の場合は Next.js が別ポートを案内します。
 
 ## 本番前チェック
 
@@ -21,19 +31,209 @@ npm run verify
 
 ## 環境変数
 
-`.env.example` を参考に設定します。
+`.env.example` を参考に Vercel の Environment Variables を設定します。
 
 ```bash
 NEXT_PUBLIC_APP_URL=https://your-production-domain.example
-BASIC_AUTH_USER=your-user
-BASIC_AUTH_PASSWORD=your-password
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
+
+BASIC_AUTH_USER=your-basic-user
+BASIC_AUTH_PASSWORD=your-basic-password
+
+ALLOW_BOOTSTRAP_ADMIN=false
+
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
 ```
 
-`BASIC_AUTH_USER` と `BASIC_AUTH_PASSWORD` を両方設定すると、公開URL全体に Basic 認証がかかります。クローズドβや審査制プラットフォームの初期運用では、必ず本番環境に設定してください。
+## DBセットアップ
 
-## デプロイ
+### おすすめDB
 
-Vercel での推奨設定:
+2026年時点では、Vercel Postgres は新規作成できません。Vercel公式ドキュメントでも、新規プロジェクトは Marketplace の Postgres integration を使う案内になっています。
+
+このプロジェクトでは **Neon** を推奨します。理由は、Vercel Marketplace から入れられる、無料枠から始められる、Vercelへの環境変数注入が簡単、PostgreSQLそのものなので Prisma と相性がよい、の4点です。
+
+候補:
+
+- Neon: 推奨。Vercel Marketplace連携が一番簡単
+- Supabase Postgres: 管理画面が分かりやすい。将来 Supabase Auth/Storage を使うなら有力
+- Vercel Postgres: 新規提供は終了。既存DBがある場合のみ継続利用
+
+### Vercel画面での作業
+
+1. Vercel Dashboard を開く
+2. 対象プロジェクト `succession-platform` を開く
+3. 上部または左メニューの `Storage` または `Integrations` を開く
+4. Marketplace で `Neon` を検索
+5. `Neon` を選び、`Install` または `Add Integration`
+6. `Create New Neon Account` を選ぶ
+7. 作成先の Vercel Project に `succession-platform` を選ぶ
+8. Region は近い場所を選ぶ。日本向けなら Tokyo があれば Tokyo、なければ Singapore など近いリージョン
+9. 作成後、Vercel Project の `Settings` → `Environment Variables` を開く
+10. `DATABASE_URL` が入っていることを確認
+
+Neon連携で複数のURLが入ることがあります。このプロジェクトで必須なのは Prisma が読む `DATABASE_URL` です。
+
+### Vercelに入れる環境変数
+
+Production に最低限入れる値:
+
+```bash
+NEXT_PUBLIC_APP_URL=https://your-production-domain.example
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
+BASIC_AUTH_USER=your-basic-user
+BASIC_AUTH_PASSWORD=your-basic-password
+ALLOW_BOOTSTRAP_ADMIN=false
+```
+
+Stripeはまだ未使用なので空で大丈夫です。将来決済を入れる時に設定します。
+
+```bash
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+```
+
+### migration か db:push か
+
+本番は **migration 推奨** です。
+
+このリポジトリには初期 migration を追加済みです。
+
+```text
+prisma/migrations/20260706000000_initial_auth_schema/migration.sql
+```
+
+初回本番DBにも以下を使います。
+
+```bash
+npm run db:migrate
+```
+
+`db:push` は試作や空DBの一発反映には便利ですが、変更履歴が残りません。本番DBでは、将来の変更を追跡できる `migrate deploy`、つまりこのプロジェクトの `npm run db:migrate` を使ってください。
+
+### コマンドでの作業
+
+Vercel CLIを使う場合:
+
+```bash
+cd succession-platform
+npm install
+vercel env pull .env.local
+npm run db:migrate
+npm run verify
+```
+
+Vercel CLIを使わない場合:
+
+1. Vercelの環境変数画面から `DATABASE_URL` をコピー
+2. ローカルに `.env.local` を作る
+3. `.env.local` に `DATABASE_URL=...` を貼る
+4. 以下を実行
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+失敗したら、まず `DATABASE_URL` の末尾に `?sslmode=require` があるか確認してください。
+
+## 初期OWNER作成
+
+### 安全な流れ
+
+1. Vercel Dashboard → Project → `Settings` → `Environment Variables`
+2. `ALLOW_BOOTSTRAP_ADMIN` を `true` に変更
+3. `Save`
+4. Vercel Dashboard → Project → `Deployments`
+5. 最新デプロイの `Redeploy` を実行
+6. Basic認証を通る
+7. `https://your-production-domain.example/setup` を開く
+8. 企業名、企業スラッグ、OWNERユーザー、12文字以上のパスワードを登録
+9. 作成が成功したら、自動でダッシュボードに移動
+10. Vercel Dashboard → Project → `Settings` → `Environment Variables`
+11. `ALLOW_BOOTSTRAP_ADMIN` を `false` に戻す、または削除
+12. `Save`
+13. 再度 `Deployments` → `Redeploy`
+14. `/setup` にアクセスして 404 になることを確認
+15. `/login` から作成したOWNERでログインできることを確認
+
+`/setup` は既存ユーザーが1件でも存在する場合は利用できません。
+
+### 重要
+
+`ALLOW_BOOTSTRAP_ADMIN=true` のまま放置しないでください。既存ユーザーが1件でもあれば追加作成は止まりますが、初期セットアップ入口が見える状態は本番運用として不要です。
+
+## 失敗しやすいポイント
+
+### `DATABASE_URL` がない
+
+症状:
+
+- Vercel build が Prisma 関連で失敗
+- `/login` や `/setup` がエラーになる
+
+確認:
+
+- Vercel → Project → `Settings` → `Environment Variables`
+- `DATABASE_URL` が Production に入っているか
+
+### DBにテーブルがない
+
+症状:
+
+- `/setup` で `CompanyUser` などのテーブルがないと言われる
+
+対応:
+
+```bash
+npm run db:migrate
+```
+
+### `ALLOW_BOOTSTRAP_ADMIN=true` にしたのに `/setup` が404
+
+原因:
+
+- 環境変数変更後に Redeploy していない
+
+対応:
+
+- Vercel → `Deployments` → 最新デプロイ → `Redeploy`
+
+### Basic認証で先に止まる
+
+これは正常です。Basic認証はまだ残しています。
+
+流れ:
+
+1. Basic認証を入力
+2. `/setup` または `/login` に入る
+3. アプリ内ログインを行う
+
+### OWNER作成後に `/setup` が使えない
+
+正常です。既存ユーザーが1件でもある場合、`/setup` は閉じます。
+
+### `db:push` を使ってよいか迷う
+
+本番では使わない方針です。今回から migration を作ったので、基本は `npm run db:migrate` で進めます。
+
+## ログイン
+
+`/login` から企業アカウントでログインします。ログイン成功、ログイン失敗、ログアウト、初期OWNER作成は監査ログへ記録されます。
+
+## 権限管理
+
+`/settings/security` で権限一覧と最新の監査ログを確認できます。
+
+- `OWNER`: 全権限。請求、ユーザー管理、監査ログ確認が可能
+- `ADMIN`: ユーザー管理と監査ログ確認が可能
+- `MEMBER`: 候補者閲覧、スカウト、メッセージ対応が可能
+- `VIEWER`: 閲覧のみ
+
+## Vercel設定
 
 - Framework Preset: Next.js
 - Build Command: `npm run build`
@@ -41,14 +241,53 @@ Vercel での推奨設定:
 - Output Directory: `.next`
 - Environment Variables: `.env.example` の値を本番用に設定
 
-## 実装済み
+`postinstall` で `prisma generate` が走るため、Vercel build 時にも Prisma Client が生成されます。
 
-- 企業側ダッシュボード
-- スカウト進行状況
-- 後継者候補カード
-- 審査済みシグナル
-- メッセージプレビュー
-- Basic 認証ゲート
-- セキュリティヘッダー
-- 404、エラー、読み込み画面
-- robots によるクローラー除外
+## Vercel env pull で空文字になる場合
+
+Vercel の `vercel env pull .env.local --environment=production` で次のようになる場合があります。
+
+```bash
+DATABASE_URL=""
+DATABASE_URL_UNPOOLED=""
+NEXT_PUBLIC_APP_URL=""
+```
+
+原因は主に2つです。
+
+1. Vercel側の変数が Sensitive Environment Variable として作成されている
+2. Vercel側でキーは存在するが、値そのものが空で保存されている
+
+VercelのSensitive Environment Variablesは、作成後に値を読み戻せない仕様です。そのため、Vercel上の実行時には使えても、CLIでローカルにpullすると空になることがあります。
+
+確認コマンド:
+
+```bash
+vercel env ls
+vercel env pull /tmp/vercel-production-env --environment=production --yes
+```
+
+値は表示せず、長さだけ確認する場合:
+
+```bash
+awk -F= '/^(DATABASE_URL|NEXT_PUBLIC_APP_URL)=/ { gsub(/^"|"$/, "", $2); print $1 " length=" length($2) }' /tmp/vercel-production-env
+```
+
+`length=0` の場合、ローカルの `.env.local` には手で値を入れてください。Neonの場合は、Neon Dashboard の接続文字列をコピーして使います。
+
+```bash
+DATABASE_URL="postgresql://..."
+NEXT_PUBLIC_APP_URL="https://your-production-domain.example"
+```
+
+空の `.env.local` や `.env` が残っていると、Prismaは `DATABASE_URL resolved to an empty string` で失敗します。このプロジェクトでは `npm run db:migrate` と `npm run db:push` の前に `DATABASE_URL` の空チェックを行います。
+
+## Stripe連携の次ステップ
+
+現時点では課金処理は未実装です。次フェーズで以下を追加します。
+
+- Stripe Customer 作成
+- Checkout Session 作成
+- Webhook 受信
+- subscription status の同期
+- 請求管理画面
