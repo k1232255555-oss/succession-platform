@@ -233,6 +233,53 @@ npm run db:migrate
 - `MEMBER`: 候補者閲覧、スカウト、メッセージ対応が可能
 - `VIEWER`: 閲覧のみ
 
+## 後継者候補管理
+
+候補者機能は Prisma + PostgreSQL の `SuccessorCandidate` テーブルで管理します。
+
+主な画面:
+
+- `/candidates`: 候補者一覧、検索、フィルター
+- `/candidates/[id]`: 候補者詳細プロフィール
+- `/candidates/admin`: OWNER専用の候補者管理
+- `/candidates/admin/new`: OWNER専用の候補者登録
+- `/candidates/admin/[id]/edit`: OWNER専用の候補者編集
+
+権限:
+
+- `OWNER`: 候補者の登録、編集、削除、閲覧が可能
+- `ADMIN / MEMBER / VIEWER`: 候補者の閲覧のみ可能
+
+候補者の作成、更新、削除、詳細閲覧は `AuditLog` に記録されます。
+
+### 本番DBへの反映
+
+本番では migration を使います。Vercel / Neon の `DATABASE_URL` が入っている状態で実行してください。
+
+```bash
+npm run db:migrate
+```
+
+初期候補者データを入れる場合:
+
+```bash
+npm run db:seed
+```
+
+`db:seed` は最初に見つかった会社に対して候補者を作成します。すでにその会社に候補者が存在する場合は重複投入を避けるためスキップします。
+
+### 運用メモ
+
+審査ステータスは以下を使います。
+
+- `DRAFT`: 下書き
+- `UNDER_REVIEW`: 審査中
+- `APPROVED`: 承認済み
+- `REJECTED`: 差し戻し
+- `ARCHIVED`: 非公開
+
+検索・フィルターは一覧ページのURLクエリとして保持されます。地域、希望業種、スキル、審査状態、注目候補フラグで絞り込みできます。
+
 ## Vercel設定
 
 - Framework Preset: Next.js

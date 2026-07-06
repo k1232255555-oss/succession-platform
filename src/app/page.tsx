@@ -23,14 +23,17 @@ import {
   UsersRound,
   Zap,
 } from "lucide-react";
+import Link from "next/link";
 import { LogoutButton } from "@/app/logout-button";
 import { requireUser } from "@/lib/auth";
+import { getCandidateScore } from "@/lib/candidates";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 const navItems = [
   { label: "ダッシュボード", href: "/", icon: Home, active: true },
-  { label: "後継者候補を探す", href: "#candidates", icon: UserRoundSearch, active: false },
+  { label: "後継者候補を探す", href: "/candidates", icon: UserRoundSearch, active: false },
   { label: "メッセージ", href: "#messages", icon: MessageCircle, active: false },
   { label: "設定", href: "/settings/security", icon: Settings, active: false },
 ];
@@ -39,45 +42,6 @@ const tractionStats = [
   { label: "参加企業", value: "42", suffix: "社" },
   { label: "審査済みの若者", value: "128", suffix: "名" },
   { label: "今月の新規マッチング", value: "15", suffix: "件" },
-];
-
-const candidates = [
-  {
-    name: "Ren / 24歳",
-    area: "福岡",
-    tagline: "眠っている地方ブランドを、世界に届く熱狂へ変えたい。",
-    fields: ["SNSマーケティング", "ショート動画", "ブランド再編集"],
-    vision:
-      "家業ではないからこそ、しがらみなく本質を磨き直せる。現場に入り、毎日発信し、顧客の熱量を作ります。",
-    intensity: "96",
-  },
-  {
-    name: "Mika / 22歳",
-    area: "東京",
-    tagline: "AIで古い業務をほどき、職人の時間を取り戻したい。",
-    fields: ["AI活用", "業務自動化", "顧客管理"],
-    vision:
-      "小さな会社ほど、テクノロジーの効き目は大きい。人がやるべき仕事に集中できる組織へ変えます。",
-    intensity: "91",
-  },
-  {
-    name: "Takumi / 26歳",
-    area: "愛知",
-    tagline: "泥臭い現場から逃げず、継ぐ価値のある事業に人生を賭けたい。",
-    fields: ["体力・根性", "営業開拓", "現場改善"],
-    vision:
-      "数字だけでは測れない事業の誇りを、次の世代に接続したい。まずは誰よりも早く現場に立ちます。",
-    intensity: "98",
-  },
-  {
-    name: "Aoi / 23歳",
-    area: "京都",
-    tagline: "地域に埋もれた技術を、若い購買体験に翻訳したい。",
-    fields: ["EC運営", "UX設計", "コミュニティ作り"],
-    vision:
-      "良いものが売れない時代を終わらせたい。買う理由、語りたくなる理由まで設計します。",
-    intensity: "93",
-  },
 ];
 
 const pipelineItems = [
@@ -108,6 +72,13 @@ const messagePreviews = [
 
 export default async function DashboardPage() {
   const user = await requireUser();
+  const successorCandidates = await prisma.successorCandidate.findMany({
+    where: {
+      companyId: user.companyId,
+    },
+    orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
+    take: 4,
+  });
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -312,22 +283,22 @@ export default async function DashboardPage() {
               </h3>
             </div>
 
-            <button
-              type="button"
+            <Link
+              href="/candidates"
               className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
             >
               すべて見る
               <ArrowUpRight className="h-4 w-4" />
-            </button>
+            </Link>
           </section>
 
           <section
             id="candidates"
             className="grid gap-4 py-5 md:grid-cols-2 xl:grid-cols-4"
           >
-            {candidates.map((candidate) => (
+            {successorCandidates.map((candidate) => (
               <article
-                key={candidate.name}
+                key={candidate.id}
                 className="group flex min-h-[420px] flex-col rounded border border-zinc-800 bg-zinc-950/85 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.34)] transition hover:border-amber-300/35 hover:shadow-[0_20px_70px_rgba(212,175,55,0.10)]"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -336,11 +307,11 @@ export default async function DashboardPage() {
                       Verified Talent
                     </p>
                     <h4 className="mt-3 text-xl font-semibold text-white">
-                      {candidate.name}
+                      {candidate.name} / {candidate.age}歳
                     </h4>
                     <div className="mt-2 flex items-center gap-1 text-xs font-medium text-zinc-500">
                       <MapPin className="h-3.5 w-3.5 text-amber-300/80" />
-                      <span>{candidate.area}</span>
+                      <span>{candidate.region}</span>
                     </div>
                   </div>
                   <div className="grid h-11 w-11 shrink-0 place-items-center rounded border border-amber-300/20 bg-amber-300/10 text-amber-200">
@@ -349,15 +320,15 @@ export default async function DashboardPage() {
                 </div>
 
                 <p className="mt-5 text-lg font-semibold leading-7 text-zinc-100">
-                  {candidate.tagline}
+                  {candidate.selfPr}
                 </p>
 
                 <p className="mt-4 text-sm leading-6 text-zinc-400">
-                  {candidate.vision}
+                  {candidate.career}
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  {candidate.fields.map((field) => (
+                  {candidate.skills.slice(0, 3).map((field) => (
                     <span
                       key={field}
                       className="rounded border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-300"
@@ -376,19 +347,19 @@ export default async function DashboardPage() {
                     <div className="flex items-center gap-1 text-amber-300">
                       <Zap className="h-4 w-4" />
                       <span className="text-lg font-semibold">
-                        {candidate.intensity}
+                        {getCandidateScore(candidate)}
                       </span>
                     </div>
                   </div>
 
                   <div className="grid gap-2">
-                    <button
-                      type="button"
+                    <Link
+                      href={`/candidates/${candidate.id}`}
                       className="inline-flex h-11 items-center justify-center gap-2 rounded border border-zinc-700 px-4 text-sm font-semibold text-zinc-100 transition hover:border-amber-300/40 hover:bg-zinc-900"
                     >
                       プロフィール詳細を見る
                       <ChevronRight className="h-4 w-4" />
-                    </button>
+                    </Link>
                     <button
                       type="button"
                       className="inline-flex min-h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 py-3 text-sm font-bold text-black shadow-[0_0_28px_rgba(251,191,36,0.24)] transition hover:bg-amber-200"
@@ -402,6 +373,13 @@ export default async function DashboardPage() {
                 </div>
               </article>
             ))}
+            {successorCandidates.length === 0 ? (
+              <div className="rounded border border-zinc-800 bg-zinc-950/85 p-6 md:col-span-2 xl:col-span-4">
+                <p className="text-sm leading-6 text-zinc-400">
+                  まだ候補者が登録されていません。OWNERは管理画面から初期候補者を登録できます。
+                </p>
+              </div>
+            ) : null}
           </section>
 
           <section

@@ -109,6 +109,10 @@ export function canManageBilling(user: Pick<CompanyUser, "role">) {
   return user.role === "OWNER" || user.role === "ADMIN";
 }
 
+export function canManageCandidates(user: Pick<CompanyUser, "role">) {
+  return user.role === "OWNER";
+}
+
 export function requireRole(user: Pick<CompanyUser, "role">, roles: UserRole[]) {
   if (!roles.includes(user.role)) {
     redirect("/");

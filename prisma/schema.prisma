@@ -22,7 +22,19 @@ enum AuditAction {
   SESSION_REVOKED
   USER_CREATED
   USER_UPDATED
+  CANDIDATE_VIEWED
+  CANDIDATE_CREATED
+  CANDIDATE_UPDATED
+  CANDIDATE_DELETED
   STRIPE_CUSTOMER_LINKED
+}
+
+enum CandidateReviewStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ARCHIVED
 }
 
 model Company {
@@ -35,6 +47,7 @@ model Company {
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
   auditLogs            AuditLog[]
+  candidates           SuccessorCandidate[]
   users                CompanyUser[]
 }
 
@@ -85,4 +98,29 @@ model AuditLog {
   @@index([companyId, createdAt])
   @@index([actorId])
   @@index([action])
+}
+
+model SuccessorCandidate {
+  id                        String                @id @default(cuid())
+  companyId                 String
+  name                      String
+  age                       Int
+  region                    String
+  desiredIndustries         String[]
+  skills                    String[]
+  career                    String
+  selfPr                    String
+  aiUsageLevel              Int                   @default(3)
+  fieldExperienceLevel      Int                   @default(3)
+  successionMotivationLevel Int                   @default(3)
+  reviewStatus              CandidateReviewStatus @default(UNDER_REVIEW)
+  isFeatured                Boolean               @default(false)
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  company                   Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, reviewStatus])
+  @@index([companyId, isFeatured])
+  @@index([companyId, region])
+  @@index([createdAt])
 }
