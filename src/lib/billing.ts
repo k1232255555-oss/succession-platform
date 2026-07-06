@@ -1,5 +1,5 @@
 import { canManageBilling } from "@/lib/auth";
-import type { CompanyUser } from "@/generated/prisma/client";
+import type { CompanyUser } from "@prisma/client";
 
 export type BillingPlan = "starter" | "growth" | "enterprise";
 

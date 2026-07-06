@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { AuditAction } from "@/generated/prisma/client";
+import { AuditAction } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
 import { destroySession, getCurrentUser, getRequestContext } from "@/lib/auth";
 

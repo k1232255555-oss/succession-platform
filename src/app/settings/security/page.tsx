@@ -1,4 +1,4 @@
-import { AuditAction } from "@/generated/prisma/client";
+import { AuditAction } from "@prisma/client";
 import { requireRole, requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 

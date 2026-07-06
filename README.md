@@ -246,10 +246,13 @@ npm run db:migrate
 Vercel Runtime は Linux 系の `rhel-openssl-3.0.x` を使うため、`prisma/schema.prisma` の generator には以下を明示しています。
 
 ```prisma
+provider = "prisma-client-js"
 binaryTargets = ["native", "rhel-openssl-3.0.x"]
 ```
 
-これにより、ローカル用の `native` と Vercel本番用の Query Engine が生成対象になります。
+Prisma Client は公式の標準出力先である `@prisma/client` を使います。カスタム出力先 `src/generated/prisma` は Vercel の Serverless 出力に Query Engine が含まれない原因になりやすいため使いません。
+
+`next.config.ts` の `outputFileTracingIncludes` でも `node_modules/.prisma/client/**` と `node_modules/@prisma/client/**` を明示的に含めています。これにより、Vercel の Function bundle に `libquery_engine-rhel-openssl-3.0.x.so.node` が入るようにしています。
 
 ## Vercel env pull で空文字になる場合
 

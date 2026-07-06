@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { AuditAction, UserRole } from "@/generated/prisma/client";
+import { AuditAction, UserRole } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
 import { createSession, getRequestContext } from "@/lib/auth";
 import { hashPassword } from "@/lib/password";

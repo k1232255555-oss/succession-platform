@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  outputFileTracingIncludes: {
+    "/*": ["./node_modules/.prisma/client/**", "./node_modules/@prisma/client/**"],
+  },
   async headers() {
     return [
       {

@@ -1,4 +1,4 @@
-import type { AuditAction, Prisma } from "@/generated/prisma/client";
+import type { AuditAction, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export async function writeAuditLog(input: {

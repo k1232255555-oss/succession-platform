@@ -2,7 +2,7 @@ import { cookies, headers } from "next/headers";
 import { cache } from "react";
 import { createHash, randomBytes } from "crypto";
 import { redirect } from "next/navigation";
-import type { CompanyUser, UserRole } from "@/generated/prisma/client";
+import type { CompanyUser, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export const sessionCookieName = "legacy_gate_session";
