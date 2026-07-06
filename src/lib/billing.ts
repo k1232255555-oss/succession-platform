@@ -25,6 +25,10 @@ export type BillingPlanConfig = {
   };
 };
 
+export function isStripeBillingEnabled() {
+  return process.env.STRIPE_BILLING_ENABLED === "true";
+}
+
 export const billingPlans: BillingPlanConfig[] = [
   {
     plan: BillingPlan.FREE,
@@ -82,7 +86,9 @@ export function assertCanManageBilling(user: Pick<CompanyUser, "role">) {
 }
 
 export function getStripeMode() {
-  return hasEnvValue("STRIPE_SECRET_KEY") ? "configured" : "not_configured";
+  return isStripeBillingEnabled() && hasEnvValue("STRIPE_SECRET_KEY")
+    ? "configured"
+    : "not_configured";
 }
 
 export function getAppUrl() {
@@ -105,6 +111,23 @@ export function getPlanConfig(plan: BillingPlan) {
   return billingPlans.find((item) => item.plan === plan) ?? billingPlans[0];
 }
 
+export function getEffectivePlanConfig(plan: BillingPlan) {
+  if (isStripeBillingEnabled()) {
+    return getPlanConfig(plan);
+  }
+
+  return {
+    ...getPlanConfig(BillingPlan.FREE),
+    description: "β期間中は無料で候補者検索、AIマッチング、スカウト、メッセージを利用できます。",
+    priceLabel: "β期間中無料",
+    limits: {
+      users: "unlimited",
+      visibleCandidates: "unlimited",
+      scoutsPerMonth: "unlimited",
+    },
+  } satisfies BillingPlanConfig;
+}
+
 export function formatPlanLimit(value: PlanLimit) {
   return value === "unlimited" ? "無制限" : value.toLocaleString("ja-JP");
 }
@@ -117,6 +140,10 @@ export function hasActiveBillingAccess(input: {
   plan: BillingPlan;
   status: BillingSubscriptionStatus;
 }) {
+  if (!isStripeBillingEnabled()) {
+    return true;
+  }
+
   if (input.plan === BillingPlan.FREE) {
     return true;
   }

@@ -19,6 +19,7 @@ import {
   getPlanConfig,
   getStripeMode,
   getStripeClient,
+  isStripeBillingEnabled,
 } from "@/lib/billing";
 import { prisma } from "@/lib/prisma";
 
@@ -34,6 +35,14 @@ export async function startCheckoutAction(plan: BillingPlan) {
 
   if (plan === BillingPlan.FREE) {
     redirect("/settings/billing");
+  }
+
+  if (!isStripeBillingEnabled()) {
+    redirect(
+      `/settings/billing?notice=${encodeURIComponent(
+        "β期間中は無料で利用できます。課金開始までCheckoutは無効です。",
+      )}`,
+    );
   }
 
   const planConfig = getPlanConfig(plan);
@@ -143,6 +152,14 @@ export async function startCustomerPortalAction() {
 
   if (!company?.stripeCustomerId) {
     redirect("/settings/billing?error=Stripe顧客情報がまだありません。");
+  }
+
+  if (!isStripeBillingEnabled()) {
+    redirect(
+      `/settings/billing?notice=${encodeURIComponent(
+        "β期間中は無料運用中です。Customer Portalは課金開始後に利用できます。",
+      )}`,
+    );
   }
 
   const stripeCustomerId = company.stripeCustomerId;

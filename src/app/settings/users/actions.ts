@@ -10,7 +10,7 @@ import {
   requireSameOriginRequest,
   requireUser,
 } from "@/lib/auth";
-import { getPlanConfig, isWithinLimit } from "@/lib/billing";
+import { getEffectivePlanConfig, isWithinLimit } from "@/lib/billing";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 
@@ -105,7 +105,7 @@ export async function createCompanyUserAction(formData: FormData) {
     );
   }
 
-  const planConfig = getPlanConfig(actor.company.billingPlan);
+  const planConfig = getEffectivePlanConfig(actor.company.billingPlan);
   const activeUserCount = await prisma.companyUser.count({
     where: {
       companyId: actor.companyId,

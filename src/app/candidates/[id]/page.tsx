@@ -437,7 +437,7 @@ export default async function CandidateDetailPage({
                     name="feeAcknowledged"
                     className="mt-1 h-4 w-4 accent-amber-300"
                   />
-                  スカウト成立時にマッチング料が発生することを確認しました。
+                  β期間中は無料でスカウトを送信できることを確認しました。
                 </label>
                 <button
                   type="submit"

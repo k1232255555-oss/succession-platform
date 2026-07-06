@@ -25,7 +25,7 @@ import {
   getFallbackMatch,
   type CandidateWithMatch,
 } from "@/lib/ai-matching";
-import { formatPlanLimit, getPlanConfig } from "@/lib/billing";
+import { formatPlanLimit, getEffectivePlanConfig } from "@/lib/billing";
 import {
   getCandidateScore,
   reviewStatusLabels,
@@ -183,7 +183,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
   const status = getParam(params, "status")?.trim() ?? "";
   const sort = getParam(params, "sort")?.trim() ?? "ai";
   const featured = getParam(params, "featured") === "on";
-  const planConfig = getPlanConfig(user.company.billingPlan);
+  const planConfig = getEffectivePlanConfig(user.company.billingPlan);
   const visibleCandidateLimit = planConfig.limits.visibleCandidates;
   const candidateTake =
     visibleCandidateLimit === "unlimited" ? undefined : visibleCandidateLimit;
@@ -475,7 +475,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
           <div className="hidden items-center gap-2 text-sm text-zinc-500 sm:flex">
             <Target className="h-4 w-4 text-amber-300" />
             <span>
-              {planConfig.name}プラン表示上限:{" "}
+              {planConfig.name} / 表示上限:{" "}
               {formatPlanLimit(visibleCandidateLimit)}
             </span>
           </div>
@@ -495,10 +495,10 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
           <section className="mt-5 rounded border border-zinc-800 bg-black/35 p-8 text-center">
             <Zap className="mx-auto h-8 w-8 text-amber-300" />
             <h2 className="mt-4 text-xl font-semibold text-white">
-              条件に合う候補者がまだいません
+              現在、審査済み候補者を準備中です
             </h2>
-            <p className="mt-3 text-sm text-zinc-400">
-              検索条件をゆるめるか、OWNERに候補者登録を依頼してください。
+            <p className="mt-3 text-sm leading-6 text-zinc-400">
+              候補者登録・審査が完了次第、順次公開されます。β参加企業は無料で先行登録できます。
             </p>
           </section>
         )}

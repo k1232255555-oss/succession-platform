@@ -19,7 +19,8 @@ import { canManageBilling, requireUser } from "@/lib/auth";
 import {
   billingPlans,
   formatPlanLimit,
-  getPlanConfig,
+  getEffectivePlanConfig,
+  isStripeBillingEnabled,
   getStripeMode,
 } from "@/lib/billing";
 import { prisma } from "@/lib/prisma";
@@ -86,7 +87,8 @@ export default async function BillingPage({ searchParams }: PageProps) {
     return null;
   }
 
-  const currentPlan = getPlanConfig(company.billingPlan);
+  const stripeBillingEnabled = isStripeBillingEnabled();
+  const currentPlan = getEffectivePlanConfig(company.billingPlan);
   const stripeConfigured = getStripeMode() === "configured";
   const usageItems = [
     {
@@ -128,11 +130,11 @@ export default async function BillingPage({ searchParams }: PageProps) {
               決済とプラン管理
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              Stripe Checkout、Customer Portal、サブスク状態、請求履歴を管理します。
+              β期間中は無料で利用できます。Stripe課金コードは残しており、課金開始時に切り替えられます。
             </p>
           </div>
 
-          {canManage && company.stripeCustomerId ? (
+          {stripeBillingEnabled && canManage && company.stripeCustomerId ? (
             <form action={startCustomerPortalAction}>
               <button
                 type="submit"
@@ -157,7 +159,11 @@ export default async function BillingPage({ searchParams }: PageProps) {
           </div>
         ) : null}
 
-        {!stripeConfigured ? (
+        {!stripeBillingEnabled ? (
+          <div className="mt-5 rounded border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
+            現在はβ期間中のため無料運用中です。AIマッチング、スカウト、メッセージは追加課金なしで利用できます。
+          </div>
+        ) : !stripeConfigured ? (
           <div className="mt-5 rounded border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
             Stripe環境変数が未設定です。Free運用と画面表示は可能ですが、CheckoutとPortalは利用できません。
           </div>
@@ -224,7 +230,6 @@ export default async function BillingPage({ searchParams }: PageProps) {
         <section className="grid gap-4 pb-6 md:grid-cols-2 xl:grid-cols-4">
           {billingPlans.map((plan) => {
             const isCurrent = plan.plan === company.billingPlan;
-            const checkoutAction = startCheckoutAction.bind(null, plan.plan);
             const isFree = plan.plan === BillingPlan.FREE;
             const priceMissing = !isFree && !plan.stripePriceId;
 
@@ -276,6 +281,14 @@ export default async function BillingPage({ searchParams }: PageProps) {
                     >
                       現在のプラン
                     </button>
+                  ) : !stripeBillingEnabled ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="inline-flex h-11 w-full items-center justify-center rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 opacity-80"
+                    >
+                      β期間中は無料
+                    </button>
                   ) : isFree ? (
                     <form action={switchToFreeAction}>
                       <button
@@ -287,13 +300,13 @@ export default async function BillingPage({ searchParams }: PageProps) {
                       </button>
                     </form>
                   ) : (
-                    <form action={checkoutAction}>
+                    <form action={startCheckoutAction.bind(null, plan.plan)}>
                       <button
                         type="submit"
                         disabled={!canManage || !stripeConfigured || priceMissing}
                         className="inline-flex h-11 w-full items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200 disabled:opacity-50"
                       >
-                        Checkoutへ進む
+                        {priceMissing ? "近日公開" : "Checkoutへ進む"}
                         <ArrowUpRight className="h-4 w-4" />
                       </button>
                     </form>

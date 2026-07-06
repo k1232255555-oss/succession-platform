@@ -10,7 +10,6 @@ import {
   Handshake,
   Home,
   LockKeyhole,
-  Mail,
   MapPin,
   MessageCircle,
   Search,
@@ -21,10 +20,10 @@ import {
   Target,
   TrendingUp,
   UserRoundSearch,
-  UsersRound,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { CandidateReviewStatus, ScoutStatus } from "@prisma/client";
 import { LogoutButton } from "@/app/logout-button";
 import { requireUser } from "@/lib/auth";
 import { getCandidateScore } from "@/lib/candidates";
@@ -41,47 +40,143 @@ const navItems = [
   { label: "設定", href: "/settings", icon: Settings, active: false },
 ];
 
-const tractionStats = [
-  { label: "参加企業", value: "42", suffix: "社" },
-  { label: "審査済みの若者", value: "128", suffix: "名" },
-  { label: "今月の新規マッチング", value: "15", suffix: "件" },
-];
-
-const pipelineItems = [
-  { label: "プロフィール閲覧", value: "24", icon: UsersRound },
-  { label: "スカウト送信", value: "8", icon: Mail },
-  { label: "面談調整中", value: "3", icon: CalendarClock },
-  { label: "最終候補", value: "1", icon: Crown },
-];
-
-const signals = [
-  "AI活用に強い候補者の応募が前週比32%増加",
-  "地方製造業への関心が高い候補者が18名待機中",
-  "SNS再建を志望する候補者の返信率が上昇中",
-];
-
-const messagePreviews = [
-  {
-    name: "Mika",
-    text: "御社の受発注業務を見える化する仮説をまとめました。",
-    time: "12分前",
-  },
-  {
-    name: "Takumi",
-    text: "現場見学の日程候補を3ついただけますか。",
-    time: "1時間前",
-  },
-];
-
 export default async function DashboardPage() {
   const user = await requireUser();
-  const successorCandidates = await prisma.successorCandidate.findMany({
-    where: {
-      companyId: user.companyId,
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const [
+    successorCandidates,
+    companyCount,
+    approvedCandidateCount,
+    monthlyMatchingCount,
+    monthlyScoutCount,
+    meetingScoutCount,
+    acceptedScoutCount,
+    openThreadCount,
+    recentThreads,
+  ] = await Promise.all([
+    prisma.successorCandidate.findMany({
+      where: {
+        companyId: user.companyId,
+      },
+      orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
+      take: 4,
+    }),
+    prisma.company.count(),
+    prisma.successorCandidate.count({
+      where: {
+        companyId: user.companyId,
+        reviewStatus: CandidateReviewStatus.APPROVED,
+      },
+    }),
+    prisma.scoutRequest.count({
+      where: {
+        companyId: user.companyId,
+        status: ScoutStatus.ACCEPTED,
+        updatedAt: {
+          gte: monthStart,
+        },
+      },
+    }),
+    prisma.scoutRequest.count({
+      where: {
+        companyId: user.companyId,
+        createdAt: {
+          gte: monthStart,
+        },
+      },
+    }),
+    prisma.scoutRequest.count({
+      where: {
+        companyId: user.companyId,
+        status: ScoutStatus.MEETING,
+      },
+    }),
+    prisma.scoutRequest.count({
+      where: {
+        companyId: user.companyId,
+        status: ScoutStatus.ACCEPTED,
+      },
+    }),
+    prisma.messageThread.count({
+      where: {
+        companyId: user.companyId,
+        status: "OPEN",
+      },
+    }),
+    prisma.messageThread.findMany({
+      where: {
+        companyId: user.companyId,
+      },
+      include: {
+        scoutRequest: {
+          include: {
+            candidate: true,
+          },
+        },
+        messages: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: 2,
+    }),
+  ]);
+
+  const tractionStats = [
+    {
+      label: "参加企業",
+      value: companyCount,
+      suffix: "社",
+      note: "β登録受付中",
     },
-    orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
-    take: 4,
-  });
+    {
+      label: "審査済み候補者",
+      value: approvedCandidateCount,
+      suffix: "名",
+      note: "審査完了後に順次公開",
+    },
+    {
+      label: "今月の新規マッチング",
+      value: monthlyMatchingCount,
+      suffix: "件",
+      note: "初期メンバー募集中",
+    },
+  ];
+
+  const pipelineItems = [
+    {
+      label: "スカウト送信",
+      value: monthlyScoutCount,
+      note: "候補者公開後に利用できます",
+      icon: Handshake,
+    },
+    {
+      label: "面談調整中",
+      value: meetingScoutCount,
+      note: "スカウト承諾後に進行",
+      icon: CalendarClock,
+    },
+    {
+      label: "成立済み",
+      value: acceptedScoutCount,
+      note: "実データのみ集計",
+      icon: Crown,
+    },
+    {
+      label: "オープンスレッド",
+      value: openThreadCount,
+      note: "メッセージ開始後に表示",
+      icon: MessageCircle,
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -177,13 +272,13 @@ export default async function DashboardPage() {
               >
                 <Bell className="h-5 w-5" />
               </button>
-              <button
-                type="button"
+              <Link
+                href="/candidates"
                 className="hidden h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black shadow-[0_0_28px_rgba(251,191,36,0.22)] transition hover:bg-amber-200 sm:inline-flex"
               >
                 <Handshake className="h-4 w-4" />
-                優先スカウト
-              </button>
+                候補者を見る
+              </Link>
               <LogoutButton />
             </div>
           </header>
@@ -208,12 +303,15 @@ export default async function DashboardPage() {
                 <p className="text-sm text-zinc-400">{stat.label}</p>
                 <div className="mt-3 flex items-end gap-1">
                   <span className="text-4xl font-semibold tracking-tight text-amber-300 sm:text-5xl">
-                    {stat.value}
+                    {stat.value.toLocaleString("ja-JP")}
                   </span>
                   <span className="pb-1 text-sm font-medium text-amber-100/80">
                     {stat.suffix}
                   </span>
                 </div>
+                <p className="mt-3 text-xs leading-5 text-zinc-500">
+                  {stat.note}
+                </p>
               </div>
             ))}
           </section>
@@ -231,8 +329,8 @@ export default async function DashboardPage() {
                   </h3>
                 </div>
                 <p className="text-sm text-zinc-400">
-                  今週のアクション期限:{" "}
-                  <span className="font-semibold text-amber-200">残り2日</span>
+                  β期間中:{" "}
+                  <span className="font-semibold text-amber-200">無料で利用可能</span>
                 </p>
               </div>
 
@@ -248,11 +346,14 @@ export default async function DashboardPage() {
                       <div className="flex items-center justify-between gap-3">
                         <Icon className="h-4 w-4 text-amber-300" />
                         <span className="text-2xl font-semibold text-white">
-                          {item.value}
+                          {item.value.toLocaleString("ja-JP")}
                         </span>
                       </div>
                       <p className="mt-3 text-xs font-medium text-zinc-400">
                         {item.label}
+                      </p>
+                      <p className="mt-2 text-[11px] leading-5 text-zinc-500">
+                        {item.note}
                       </p>
                     </div>
                   );
@@ -266,11 +367,15 @@ export default async function DashboardPage() {
                 <h3 className="text-sm font-semibold">審査済みシグナル</h3>
               </div>
               <div className="mt-4 space-y-3">
-                {signals.map((signal) => (
-                  <p key={signal} className="text-sm leading-6 text-zinc-300">
-                    {signal}
-                  </p>
-                ))}
+                <p className="text-sm leading-6 text-zinc-300">
+                  現在はβ版として、候補者登録と審査を進めています。
+                </p>
+                <p className="text-sm leading-6 text-zinc-300">
+                  審査済み候補者のみ順次公開し、実績がない数字は表示しません。
+                </p>
+                <p className="text-sm leading-6 text-zinc-300">
+                  β参加企業は、AIマッチング・スカウト・メッセージを無料で利用できます。
+                </p>
               </div>
             </div>
           </section>
@@ -369,7 +474,7 @@ export default async function DashboardPage() {
                     >
                       スカウトする
                       <span className="text-xs font-semibold">
-                        （マッチング料発生）
+                        （β期間中無料）
                       </span>
                     </button>
                   </div>
@@ -379,7 +484,7 @@ export default async function DashboardPage() {
             {successorCandidates.length === 0 ? (
               <div className="rounded border border-zinc-800 bg-zinc-950/85 p-6 md:col-span-2 xl:col-span-4">
                 <p className="text-sm leading-6 text-zinc-400">
-                  まだ候補者が登録されていません。OWNERは管理画面から初期候補者を登録できます。
+                  現在、審査済み候補者を準備中です。候補者登録・審査が完了次第、順次公開されます。β参加企業は無料で先行登録できます。
                 </p>
               </div>
             ) : null}
@@ -410,22 +515,38 @@ export default async function DashboardPage() {
               </div>
 
               <div className="mt-5 space-y-3">
-                {messagePreviews.map((message) => (
+                {recentThreads.map((thread) => {
+                  const latestMessage = thread.messages[0];
+
+                  return (
                   <div
-                    key={message.name}
+                    key={thread.id}
                     className="rounded border border-zinc-800 bg-black/35 p-4"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <p className="font-semibold text-white">{message.name}</p>
+                      <p className="font-semibold text-white">
+                        {thread.scoutRequest.candidate.name}
+                      </p>
                       <span className="text-xs text-amber-200/70">
-                        {message.time}
+                        {thread.updatedAt.toLocaleString("ja-JP")}
                       </span>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-zinc-400">
-                      {message.text}
+                      {latestMessage?.body ?? thread.subject}
                     </p>
                   </div>
-                ))}
+                  );
+                })}
+                {recentThreads.length === 0 ? (
+                  <div className="rounded border border-zinc-800 bg-black/35 p-4">
+                    <p className="text-sm font-semibold text-white">
+                      メッセージはまだありません
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-zinc-400">
+                      スカウト後にスレッドを開始すると、ここに実データのみ表示されます。
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -437,17 +558,17 @@ export default async function DashboardPage() {
                     <span>Next Best Action</span>
                   </div>
                   <h3 className="mt-2 text-xl font-semibold text-white">
-                    今週は「現場見学」まで進める候補者を1名選定
+                    候補者公開後にスカウトから会話を開始
                   </h3>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                    熱量スコア、返信速度、志望領域の一致度から、初回面談後の温度感が高い候補者を優先表示しています。
+                    候補者検索、AIマッチング、スカウト、メッセージまでβ期間中は無料で利用できます。
                   </p>
                 </div>
                 <Link
-                  href="/scouts"
+                  href="/candidates"
                   className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
                 >
-                  推奨候補を見る
+                  候補者を確認
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>

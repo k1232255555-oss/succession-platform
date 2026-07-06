@@ -11,7 +11,7 @@ import {
   requireUser,
 } from "@/lib/auth";
 import {
-  getPlanConfig,
+  getEffectivePlanConfig,
   hasActiveBillingAccess,
   isWithinLimit,
 } from "@/lib/billing";
@@ -51,12 +51,12 @@ export async function createScoutRequestAction(
   if (!feeAcknowledged) {
     redirect(
       `/candidates/${candidateId}?error=${encodeURIComponent(
-        "マッチング料発生の確認にチェックしてください。",
+        "β期間中無料の確認にチェックしてください。",
       )}`,
     );
   }
 
-  const planConfig = getPlanConfig(user.company.billingPlan);
+  const planConfig = getEffectivePlanConfig(user.company.billingPlan);
 
   if (
     !hasActiveBillingAccess({
