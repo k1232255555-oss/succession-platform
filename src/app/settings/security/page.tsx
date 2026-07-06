@@ -1,6 +1,6 @@
-import { AuditAction } from "@prisma/client";
 import Link from "next/link";
-import { UsersRound } from "lucide-react";
+import { FileSearch, UsersRound } from "lucide-react";
+import { formatAuditAction } from "@/lib/audit";
 import { requireRole, requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -24,14 +24,6 @@ const roleDescriptions = [
     description: "閲覧のみ。スカウトや設定変更は不可。",
   },
 ];
-
-function formatAction(action: AuditAction) {
-  return action
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 export default async function SecuritySettingsPage() {
   const user = await requireUser();
@@ -65,13 +57,22 @@ export default async function SecuritySettingsPage() {
               企業アカウントの権限設計と、重要操作の履歴を確認できます。
             </p>
           </div>
-          <Link
-            href="/settings/users"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
-          >
-            <UsersRound className="h-4 w-4" />
-            ユーザー管理
-          </Link>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link
+              href="/settings/audit"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
+            >
+              <FileSearch className="h-4 w-4" />
+              監査ログ検索
+            </Link>
+            <Link
+              href="/settings/users"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
+            >
+              <UsersRound className="h-4 w-4" />
+              ユーザー管理
+            </Link>
+          </div>
         </div>
 
         <section className="grid gap-4 py-6 md:grid-cols-2 xl:grid-cols-4">
@@ -109,7 +110,7 @@ export default async function SecuritySettingsPage() {
                       {log.createdAt.toLocaleString("ja-JP")}
                     </td>
                     <td className="py-3 pr-4 font-medium text-amber-200">
-                      {formatAction(log.action)}
+                      {formatAuditAction(log.action)}
                     </td>
                     <td className="py-3 pr-4 text-zinc-300">
                       {log.actor?.email ?? "System"}

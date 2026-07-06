@@ -1,6 +1,14 @@
 import type { AuditAction, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+export function formatAuditAction(action: AuditAction) {
+  return action
+    .toLowerCase()
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export async function writeAuditLog(input: {
   action: AuditAction;
   companyId: string;
