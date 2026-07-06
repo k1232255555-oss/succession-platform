@@ -36,7 +36,7 @@ const navItems = [
   { label: "ダッシュボード", href: "/", icon: Home, active: true },
   { label: "後継者候補を探す", href: "/candidates", icon: UserRoundSearch, active: false },
   { label: "スカウト管理", href: "/scouts", icon: Handshake, active: false },
-  { label: "メッセージ", href: "#messages", icon: MessageCircle, active: false },
+  { label: "メッセージ", href: "/messages", icon: MessageCircle, active: false },
   { label: "決済管理", href: "/settings/billing", icon: CreditCard, active: false },
   { label: "設定", href: "/settings/security", icon: Settings, active: false },
 ];
@@ -400,13 +400,13 @@ export default async function DashboardPage() {
                     返信待ちの候補者
                   </h3>
                 </div>
-                <button
-                  type="button"
+                <Link
+                  href="/messages"
                   aria-label="メッセージを開く"
                   className="grid h-10 w-10 place-items-center rounded border border-zinc-800 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200"
                 >
                   <ArrowUpRight className="h-4 w-4" />
-                </button>
+                </Link>
               </div>
 
               <div className="mt-5 space-y-3">

@@ -29,6 +29,10 @@ enum AuditAction {
   SCOUT_CREATED
   SCOUT_UPDATED
   AI_MATCH_RECALCULATED
+  MESSAGE_THREAD_CREATED
+  MESSAGE_SENT
+  MESSAGE_READ
+  MESSAGE_THREAD_CLOSED
   STRIPE_CUSTOMER_LINKED
   BILLING_CHECKOUT_STARTED
   BILLING_PORTAL_STARTED
@@ -80,6 +84,17 @@ enum BillingInvoiceStatus {
   UNCOLLECTIBLE
 }
 
+enum MessageThreadStatus {
+  OPEN
+  CLOSED
+}
+
+enum MessageSenderType {
+  COMPANY_USER
+  CANDIDATE
+  OPERATIONS
+}
+
 model Company {
   id                           String                    @id @default(cuid())
   name                         String
@@ -97,26 +112,31 @@ model Company {
   billingInvoices              BillingInvoice[]
   candidates                   SuccessorCandidate[]
   aiMatchResults               AiMatchResult[]
+  messageThreads               MessageThread[]
+  messages                     Message[]
   scoutRequests                ScoutRequest[]
   stripeWebhookEvents          StripeWebhookEvent[]
   users                        CompanyUser[]
 }
 
 model CompanyUser {
-  id            String         @id @default(cuid())
-  companyId     String
-  email         String         @unique
-  name          String
-  role          UserRole       @default(MEMBER)
-  passwordHash  String
-  isActive      Boolean        @default(true)
-  lastLoginAt   DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  auditLogs     AuditLog[]
-  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  scoutRequests ScoutRequest[]
-  sessions      Session[]
+  id                    String               @id @default(cuid())
+  companyId             String
+  email                 String               @unique
+  name                  String
+  role                  UserRole             @default(MEMBER)
+  passwordHash          String
+  isActive              Boolean              @default(true)
+  lastLoginAt           DateTime?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  auditLogs             AuditLog[]
+  company               Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdMessageThreads MessageThread[]      @relation("MessageThreadCreatedBy")
+  messageReadReceipts   MessageReadReceipt[]
+  sentMessages          Message[]
+  scoutRequests         ScoutRequest[]
+  sessions              Session[]
 
   @@index([companyId])
   @@index([role])
@@ -268,9 +288,61 @@ model ScoutRequest {
   candidate         SuccessorCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdBy         CompanyUser?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  messageThread     MessageThread?
 
   @@index([companyId, status])
   @@index([candidateId])
   @@index([createdById])
   @@index([createdAt])
+}
+
+model MessageThread {
+  id             String              @id @default(cuid())
+  companyId      String
+  scoutRequestId String              @unique
+  createdById    String?
+  subject        String
+  status         MessageThreadStatus @default(OPEN)
+  closedAt       DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  company        Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  scoutRequest   ScoutRequest        @relation(fields: [scoutRequestId], references: [id], onDelete: Cascade)
+  createdBy      CompanyUser?        @relation("MessageThreadCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  messages       Message[]
+
+  @@index([companyId, status])
+  @@index([createdById])
+  @@index([updatedAt])
+}
+
+model Message {
+  id           String               @id @default(cuid())
+  threadId     String
+  companyId    String
+  senderUserId String?
+  senderType   MessageSenderType    @default(COMPANY_USER)
+  senderName   String
+  body         String
+  createdAt    DateTime             @default(now())
+  company      Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  thread       MessageThread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderUser   CompanyUser?         @relation(fields: [senderUserId], references: [id], onDelete: SetNull)
+  readReceipts MessageReadReceipt[]
+
+  @@index([threadId, createdAt])
+  @@index([companyId, createdAt])
+  @@index([senderUserId])
+}
+
+model MessageReadReceipt {
+  id        String      @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime    @default(now())
+  message   Message     @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      CompanyUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId, readAt])
 }

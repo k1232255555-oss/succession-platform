@@ -8,6 +8,7 @@ import {
   CalendarClock,
   Crown,
   Handshake,
+  MessageCircle,
   RefreshCw,
   MapPin,
   Pencil,
@@ -21,6 +22,7 @@ import {
 import { AuditAction } from "@prisma/client";
 import { recalculateCandidateAiMatchAction } from "@/app/candidates/admin/ai-actions";
 import { deleteCandidateAction } from "@/app/candidates/admin/actions";
+import { createMessageThreadAction } from "@/app/messages/actions";
 import { createScoutRequestAction } from "@/app/scouts/actions";
 import { writeAuditLog } from "@/lib/audit";
 import {
@@ -124,6 +126,7 @@ export default async function CandidateDetailPage({
     },
     include: {
       createdBy: true,
+      messageThread: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -482,12 +485,33 @@ export default async function CandidateDetailPage({
                   <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-300">
                     {scout.message}
                   </p>
-                  <p className="mt-3 text-xs text-zinc-500">
-                    希望面談日時:{" "}
-                    {scout.proposedMeetingAt
-                      ? scout.proposedMeetingAt.toLocaleString("ja-JP")
-                      : "-"}
-                  </p>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-zinc-500">
+                      希望面談日時:{" "}
+                      {scout.proposedMeetingAt
+                        ? scout.proposedMeetingAt.toLocaleString("ja-JP")
+                        : "-"}
+                    </p>
+                    {scout.messageThread ? (
+                      <Link
+                        href={`/messages/${scout.messageThread.id}`}
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded border border-amber-300/30 px-3 text-xs font-semibold text-amber-200 transition hover:bg-amber-300/10"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        メッセージ
+                      </Link>
+                    ) : (
+                      <form action={createMessageThreadAction.bind(null, scout.id)}>
+                        <button
+                          type="submit"
+                          className="inline-flex h-9 items-center justify-center gap-2 rounded border border-amber-300/30 px-3 text-xs font-semibold text-amber-200 transition hover:bg-amber-300/10"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          開始
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 </div>
               ))}
 

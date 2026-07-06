@@ -3,10 +3,12 @@ import {
   ArrowUpRight,
   CalendarClock,
   Handshake,
+  MessageCircle,
   MessageSquareText,
   SlidersHorizontal,
 } from "lucide-react";
 import { ScoutStatus } from "@prisma/client";
+import { createMessageThreadAction } from "@/app/messages/actions";
 import { updateScoutRequestAction } from "@/app/scouts/actions";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -54,6 +56,7 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
     include: {
       candidate: true,
       createdBy: true,
+      messageThread: true,
     },
     orderBy: {
       updatedAt: "desc",
@@ -142,6 +145,10 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
         <section className="mt-6 grid gap-4">
           {scoutRequests.map((scout) => {
             const updateAction = updateScoutRequestAction.bind(null, scout.id);
+            const createThreadAction = createMessageThreadAction.bind(
+              null,
+              scout.id,
+            );
 
             return (
               <article
@@ -167,13 +174,34 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
                     </p>
                   </div>
 
-                  <Link
-                    href={`/candidates/${scout.candidateId}`}
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded border border-zinc-800 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/30 hover:text-amber-100"
-                  >
-                    詳細
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Link>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    {scout.messageThread ? (
+                      <Link
+                        href={`/messages/${scout.messageThread.id}`}
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded bg-amber-300 px-3 text-sm font-bold text-black transition hover:bg-amber-200"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        メッセージ
+                      </Link>
+                    ) : (
+                      <form action={createThreadAction}>
+                        <button
+                          type="submit"
+                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded bg-amber-300 px-3 text-sm font-bold text-black transition hover:bg-amber-200"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          開始
+                        </button>
+                      </form>
+                    )}
+                    <Link
+                      href={`/candidates/${scout.candidateId}`}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded border border-zinc-800 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/30 hover:text-amber-100"
+                    >
+                      詳細
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </div>
 
                 <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_320px]">
