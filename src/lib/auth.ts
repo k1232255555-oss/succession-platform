@@ -113,6 +113,10 @@ export function canManageCandidates(user: Pick<CompanyUser, "role">) {
   return user.role === "OWNER";
 }
 
+export function canScoutCandidates(user: Pick<CompanyUser, "role">) {
+  return user.role === "OWNER" || user.role === "ADMIN" || user.role === "MEMBER";
+}
+
 export function requireRole(user: Pick<CompanyUser, "role">, roles: UserRole[]) {
   if (!roles.includes(user.role)) {
     redirect("/");

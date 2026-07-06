@@ -5,7 +5,9 @@ import {
   BadgeCheck,
   BrainCircuit,
   BriefcaseBusiness,
+  CalendarClock,
   Crown,
+  Handshake,
   MapPin,
   Pencil,
   ShieldCheck,
@@ -17,20 +19,32 @@ import {
 } from "lucide-react";
 import { AuditAction } from "@prisma/client";
 import { deleteCandidateAction } from "@/app/candidates/admin/actions";
+import { createScoutRequestAction } from "@/app/scouts/actions";
 import { writeAuditLog } from "@/lib/audit";
 import {
   canManageCandidates,
+  canScoutCandidates,
   getRequestContext,
   requireUser,
 } from "@/lib/auth";
 import { getCandidateScore, reviewStatusLabels } from "@/lib/candidates";
 import { prisma } from "@/lib/prisma";
+import { scoutStatusLabels } from "@/lib/scouts";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+function getParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string,
+) {
+  const value = params[key];
+  return Array.isArray(value) ? value[0] : value;
+}
 
 function ScoreBlock({
   label,
@@ -60,9 +74,13 @@ function ScoreBlock({
   );
 }
 
-export default async function CandidateDetailPage({ params }: PageProps) {
+export default async function CandidateDetailPage({
+  params,
+  searchParams,
+}: PageProps) {
   const user = await requireUser();
   const { id } = await params;
+  const query = (await searchParams) ?? {};
 
   const candidate = await prisma.successorCandidate.findFirst({
     where: {
@@ -74,6 +92,19 @@ export default async function CandidateDetailPage({ params }: PageProps) {
   if (!candidate) {
     notFound();
   }
+
+  const scoutRequests = await prisma.scoutRequest.findMany({
+    where: {
+      companyId: user.companyId,
+      candidateId: candidate.id,
+    },
+    include: {
+      createdBy: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
   await writeAuditLog({
     action: AuditAction.CANDIDATE_VIEWED,
@@ -87,7 +118,9 @@ export default async function CandidateDetailPage({ params }: PageProps) {
   });
 
   const deleteAction = deleteCandidateAction.bind(null, candidate.id);
+  const scoutAction = createScoutRequestAction.bind(null, candidate.id);
   const score = getCandidateScore(candidate);
+  const error = getParam(query, "error");
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -195,7 +228,7 @@ export default async function CandidateDetailPage({ params }: PageProps) {
           />
         </section>
 
-        <section className="grid gap-4 pb-8 lg:grid-cols-2">
+        <section className="grid gap-4 pb-6 lg:grid-cols-2">
           <article className="rounded border border-zinc-800 bg-black/35 p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <BriefcaseBusiness className="h-4 w-4" />
@@ -236,6 +269,119 @@ export default async function CandidateDetailPage({ params }: PageProps) {
                   </span>
                 ))}
               </div>
+            </div>
+          </article>
+        </section>
+
+        <section className="grid gap-4 pb-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <article className="rounded border border-amber-300/15 bg-amber-300/[0.06] p-5">
+            <div className="flex items-center gap-2 text-amber-200">
+              <Handshake className="h-4 w-4" />
+              <h2 className="text-sm font-semibold">Scout Request</h2>
+            </div>
+            <h3 className="mt-3 text-xl font-semibold text-white">
+              スカウトを送る
+            </h3>
+
+            {error ? (
+              <div className="mt-4 rounded border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-100">
+                {error}
+              </div>
+            ) : null}
+
+            {canScoutCandidates(user) ? (
+              <form action={scoutAction} className="mt-5 grid gap-4">
+                <label>
+                  <span className="text-xs font-medium text-zinc-500">
+                    スカウト文
+                  </span>
+                  <textarea
+                    name="message"
+                    rows={6}
+                    required
+                    minLength={20}
+                    placeholder="事業承継の背景、候補者に期待したい役割、初回面談で話したいことを入力してください。"
+                    className="mt-2 w-full rounded border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm leading-6 text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-amber-300/50"
+                  />
+                </label>
+                <label>
+                  <span className="text-xs font-medium text-zinc-500">
+                    希望面談日時
+                  </span>
+                  <input
+                    name="proposedMeetingAt"
+                    type="datetime-local"
+                    className="mt-2 h-11 w-full rounded border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-100 outline-none focus:border-amber-300/50"
+                  />
+                </label>
+                <label className="flex items-start gap-2 text-sm leading-6 text-zinc-300">
+                  <input
+                    type="checkbox"
+                    name="feeAcknowledged"
+                    className="mt-1 h-4 w-4 accent-amber-300"
+                  />
+                  スカウト成立時にマッチング料が発生することを確認しました。
+                </label>
+                <button
+                  type="submit"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
+                >
+                  <Handshake className="h-4 w-4" />
+                  スカウトを送信
+                </button>
+              </form>
+            ) : (
+              <p className="mt-5 text-sm leading-6 text-zinc-400">
+                VIEWER権限ではスカウト送信はできません。必要な場合はOWNERまたはADMINに依頼してください。
+              </p>
+            )}
+          </article>
+
+          <article className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
+            <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
+              <CalendarClock className="h-4 w-4" />
+              <span>Scout History</span>
+            </div>
+            <h3 className="mt-3 text-xl font-semibold text-white">
+              スカウト履歴
+            </h3>
+
+            <div className="mt-5 space-y-3">
+              {scoutRequests.map((scout) => (
+                <div
+                  key={scout.id}
+                  className="rounded border border-zinc-800 bg-black/35 p-4"
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-xs font-semibold text-amber-200">
+                        {scoutStatusLabels[scout.status]}
+                      </span>
+                      <span className="text-xs text-zinc-500">
+                        {scout.createdAt.toLocaleString("ja-JP")}
+                      </span>
+                    </div>
+                    <span className="text-xs text-zinc-500">
+                      by {scout.createdBy?.email ?? "System"}
+                    </span>
+                  </div>
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-300">
+                    {scout.message}
+                  </p>
+                  <p className="mt-3 text-xs text-zinc-500">
+                    希望面談日時:{" "}
+                    {scout.proposedMeetingAt
+                      ? scout.proposedMeetingAt.toLocaleString("ja-JP")
+                      : "-"}
+                  </p>
+                </div>
+              ))}
+
+              {scoutRequests.length === 0 ? (
+                <p className="rounded border border-zinc-800 bg-black/35 p-4 text-sm text-zinc-400">
+                  まだスカウト履歴はありません。
+                </p>
+              ) : null}
             </div>
           </article>
         </section>

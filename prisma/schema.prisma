@@ -26,6 +26,8 @@ enum AuditAction {
   CANDIDATE_CREATED
   CANDIDATE_UPDATED
   CANDIDATE_DELETED
+  SCOUT_CREATED
+  SCOUT_UPDATED
   STRIPE_CUSTOMER_LINKED
 }
 
@@ -35,6 +37,16 @@ enum CandidateReviewStatus {
   APPROVED
   REJECTED
   ARCHIVED
+}
+
+enum ScoutStatus {
+  DRAFT
+  SENT
+  IN_REVIEW
+  MEETING
+  ACCEPTED
+  DECLINED
+  CANCELED
 }
 
 model Company {
@@ -48,6 +60,7 @@ model Company {
   updatedAt            DateTime      @updatedAt
   auditLogs            AuditLog[]
   candidates           SuccessorCandidate[]
+  scoutRequests        ScoutRequest[]
   users                CompanyUser[]
 }
 
@@ -64,6 +77,7 @@ model CompanyUser {
   updatedAt    DateTime   @updatedAt
   auditLogs    AuditLog[]
   company      Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  scoutRequests ScoutRequest[]
   sessions     Session[]
 
   @@index([companyId])
@@ -118,9 +132,31 @@ model SuccessorCandidate {
   createdAt                 DateTime              @default(now())
   updatedAt                 DateTime              @updatedAt
   company                   Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  scoutRequests             ScoutRequest[]
 
   @@index([companyId, reviewStatus])
   @@index([companyId, isFeatured])
   @@index([companyId, region])
+  @@index([createdAt])
+}
+
+model ScoutRequest {
+  id                String             @id @default(cuid())
+  companyId         String
+  candidateId       String
+  createdById       String?
+  status            ScoutStatus        @default(SENT)
+  message           String
+  feeAcknowledged   Boolean            @default(false)
+  proposedMeetingAt DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  candidate         SuccessorCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy         CompanyUser?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([companyId, status])
+  @@index([candidateId])
+  @@index([createdById])
   @@index([createdAt])
 }

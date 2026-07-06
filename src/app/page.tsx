@@ -34,6 +34,7 @@ export const dynamic = "force-dynamic";
 const navItems = [
   { label: "ダッシュボード", href: "/", icon: Home, active: true },
   { label: "後継者候補を探す", href: "/candidates", icon: UserRoundSearch, active: false },
+  { label: "スカウト管理", href: "/scouts", icon: Handshake, active: false },
   { label: "メッセージ", href: "#messages", icon: MessageCircle, active: false },
   { label: "設定", href: "/settings/security", icon: Settings, active: false },
 ];
@@ -440,13 +441,13 @@ export default async function DashboardPage() {
                     熱量スコア、返信速度、志望領域の一致度から、初回面談後の温度感が高い候補者を優先表示しています。
                   </p>
                 </div>
-                <button
-                  type="button"
+                <Link
+                  href="/scouts"
                   className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
                 >
                   推奨候補を見る
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Link>
               </div>
             </div>
           </section>

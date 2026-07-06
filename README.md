@@ -296,6 +296,33 @@ npm run db:seed
 
 検索・フィルターは一覧ページのURLクエリとして保持されます。地域、希望業種、スキル、審査状態、注目候補フラグで絞り込みできます。
 
+## スカウト管理
+
+`/scouts` で候補者へのスカウト依頼と進行状況を管理できます。
+
+主な流れ:
+
+1. `/candidates` で候補者を検索
+2. `/candidates/[id]` で詳細を確認
+3. スカウト文、希望面談日時、マッチング料発生確認を入力して送信
+4. `/scouts` で状態を更新
+
+スカウト状態:
+
+- `SENT`: 送信済み
+- `IN_REVIEW`: 確認中
+- `MEETING`: 面談調整
+- `ACCEPTED`: 承諾
+- `DECLINED`: 辞退
+- `CANCELED`: 取消
+
+権限:
+
+- `OWNER / ADMIN / MEMBER`: スカウト送信と状態更新が可能
+- `VIEWER`: 閲覧のみ
+
+スカウト作成と状態更新は監査ログに記録されます。`feeAcknowledged` により、マッチング料発生を確認したうえで送信した履歴もDBに残ります。
+
 ## Vercel設定
 
 - Framework Preset: Next.js
