@@ -13,6 +13,7 @@ import {
   recordInvoiceFromStripe,
   syncSubscriptionFromStripe,
 } from "@/lib/billing";
+import { hasEnvValue } from "@/lib/env";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
@@ -214,9 +215,9 @@ async function handleInvoiceEvent(invoice: Stripe.Invoice, paymentFailed = false
 
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
 
-  if (!signature || !webhookSecret) {
+  if (!signature || !webhookSecret || !hasEnvValue("STRIPE_SECRET_KEY")) {
     return NextResponse.json(
       { error: "Stripe webhook is not configured." },
       { status: 400 },

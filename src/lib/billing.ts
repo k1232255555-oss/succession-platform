@@ -7,6 +7,7 @@ import {
   type CompanyUser,
 } from "@prisma/client";
 import { canManageBilling } from "@/lib/auth";
+import { getSafeAppUrl, hasEnvValue } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export type PlanLimit = number | "unlimited";
@@ -41,7 +42,7 @@ export const billingPlans: BillingPlanConfig[] = [
     name: "Standard",
     description: "小規模企業が本格的に候補者探索を始めるプラン。",
     priceLabel: "月額 Standard",
-    stripePriceId: process.env.STRIPE_STANDARD_PRICE_ID,
+    stripePriceId: process.env.STRIPE_STANDARD_PRICE_ID?.trim() || undefined,
     limits: {
       users: 3,
       visibleCandidates: 50,
@@ -53,7 +54,7 @@ export const billingPlans: BillingPlanConfig[] = [
     name: "Premium",
     description: "複数部門でスカウトと面談を進める成長企業向けプラン。",
     priceLabel: "月額 Premium",
-    stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID,
+    stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID?.trim() || undefined,
     limits: {
       users: 10,
       visibleCandidates: 200,
@@ -65,7 +66,7 @@ export const billingPlans: BillingPlanConfig[] = [
     name: "Enterprise",
     description: "専任支援と高度な運用を前提にした個別契約プラン。",
     priceLabel: "個別見積",
-    stripePriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID,
+    stripePriceId: process.env.STRIPE_ENTERPRISE_PRICE_ID?.trim() || undefined,
     limits: {
       users: "unlimited",
       visibleCandidates: "unlimited",
@@ -81,31 +82,15 @@ export function assertCanManageBilling(user: Pick<CompanyUser, "role">) {
 }
 
 export function getStripeMode() {
-  return process.env.STRIPE_SECRET_KEY ? "configured" : "not_configured";
+  return hasEnvValue("STRIPE_SECRET_KEY") ? "configured" : "not_configured";
 }
 
 export function getAppUrl() {
-  const rawUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
-
-  if (!rawUrl) {
-    return "http://localhost:3000";
-  }
-
-  try {
-    const url = new URL(rawUrl);
-
-    if (url.protocol === "http:" || url.protocol === "https:") {
-      return url.origin;
-    }
-  } catch {
-    return "http://localhost:3000";
-  }
-
-  return "http://localhost:3000";
+  return getSafeAppUrl();
 }
 
 export function getStripeClient() {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
 
   if (!secretKey) {
     throw new Error("STRIPE_SECRET_KEY is not configured.");

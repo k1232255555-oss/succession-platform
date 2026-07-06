@@ -38,7 +38,7 @@ const navItems = [
   { label: "スカウト管理", href: "/scouts", icon: Handshake, active: false },
   { label: "メッセージ", href: "/messages", icon: MessageCircle, active: false },
   { label: "決済管理", href: "/settings/billing", icon: CreditCard, active: false },
-  { label: "設定", href: "/settings/security", icon: Settings, active: false },
+  { label: "設定", href: "/settings", icon: Settings, active: false },
 ];
 
 const tractionStats = [

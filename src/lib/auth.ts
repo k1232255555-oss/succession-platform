@@ -3,6 +3,7 @@ import { cache } from "react";
 import { createHash, randomBytes } from "crypto";
 import { redirect } from "next/navigation";
 import type { CompanyUser, UserRole } from "@prisma/client";
+import { getEnvValue } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export const sessionCookieName = "legacy_gate_session";
@@ -154,9 +155,11 @@ export async function requireSameOriginRequest() {
     throw new Error("Invalid request origin.");
   }
 
-  if (process.env.NEXT_PUBLIC_APP_URL) {
+  const configuredAppUrl = getEnvValue("NEXT_PUBLIC_APP_URL");
+
+  if (configuredAppUrl) {
     try {
-      const appUrl = new URL(process.env.NEXT_PUBLIC_APP_URL);
+      const appUrl = new URL(configuredAppUrl);
 
       if (origin === appUrl.origin) {
         return;

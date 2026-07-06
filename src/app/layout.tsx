@@ -1,27 +1,9 @@
 import type { Metadata } from "next";
+import { SiteFooter } from "@/app/site-footer";
+import { getSafeAppUrl } from "@/lib/env";
 import "./globals.css";
 
-function getAppUrl() {
-  const rawUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
-
-  if (!rawUrl) {
-    return "http://localhost:3000";
-  }
-
-  try {
-    const url = new URL(rawUrl);
-
-    if (url.protocol === "http:" || url.protocol === "https:") {
-      return url.origin;
-    }
-  } catch {
-    return "http://localhost:3000";
-  }
-
-  return "http://localhost:3000";
-}
-
-const appUrl = getAppUrl();
+const appUrl = getSafeAppUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -53,7 +35,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full bg-zinc-950 flex flex-col">
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }

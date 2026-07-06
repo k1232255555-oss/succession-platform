@@ -305,11 +305,30 @@ npm run db:migrate
 {
   "ok": true,
   "database": "ok",
+  "environment": {
+    "required": {
+      "DATABASE_URL": true,
+      "NEXT_PUBLIC_APP_URL": true
+    }
+  },
   "latencyMs": 12
 }
 ```
 
 DB接続に失敗している場合は HTTP 503 と `database: "unavailable"` を返します。
+
+## 法務ページ
+
+正式公開前の導線として以下を用意しています。
+
+- `/terms`: 利用規約
+- `/privacy`: プライバシーポリシー
+- `/commercial-transaction`: 特定商取引法に基づく表記
+- `/contact`: お問い合わせ
+
+AIマッチングは参考情報であり、候補者の採用、承継、契約締結、投資判断を自動決定しない旨を明記しています。
+
+正式公開前に、運営会社名、所在地、責任者、問い合わせメール、返金条件、個人情報の削除依頼フローを実態に合わせて法務確認してください。
 
 ## 監査ログ検索
 
@@ -592,3 +611,120 @@ NEXT_PUBLIC_APP_URL="https://your-production-domain.example"
 ```
 
 空の `.env.local` や `.env` が残っていると、Prismaは `DATABASE_URL resolved to an empty string` で失敗します。このプロジェクトでは `npm run db:migrate` と `npm run db:push` の前に `DATABASE_URL` の空チェックを行います。
+
+## 正式リリース手順
+
+### 1. 必須環境変数
+
+Vercel → Project → Settings → Environment Variables → Production に以下を設定します。
+
+```bash
+DATABASE_URL=
+NEXT_PUBLIC_APP_URL=https://your-production-domain.example
+BASIC_AUTH_USER=
+BASIC_AUTH_PASSWORD=
+ALLOW_BOOTSTRAP_ADMIN=false
+```
+
+`DATABASE_URL` はNeonの接続文字列です。値の末尾に `sslmode=require` があることを確認してください。
+
+### 2. 任意環境変数
+
+外部サービスを使う場合だけ設定します。未設定でもアプリ本体は落ちません。
+
+Stripe:
+
+```bash
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_STANDARD_PRICE_ID=
+STRIPE_PREMIUM_PRICE_ID=
+STRIPE_ENTERPRISE_PRICE_ID=
+```
+
+OpenAI:
+
+```bash
+OPENAI_API_KEY=
+OPENAI_MATCHING_MODEL=gpt-5.5-mini
+```
+
+Resend:
+
+```bash
+NOTIFICATION_EMAILS_ENABLED=true
+RESEND_API_KEY=
+EMAIL_FROM=Legacy Gate <no-reply@your-production-domain.example>
+NOTIFICATION_REPLY_TO=support@your-production-domain.example
+```
+
+### 3. 外部サービス未設定時の挙動
+
+- Stripe未設定: Billing画面は表示され、CheckoutとCustomer Portalは案内表示に戻ります。
+- OpenAI未設定: AIマッチングは簡易スコアへfallbackします。
+- Resend未設定: メール送信は行わず、通知ログに `SKIPPED` として保存します。
+
+### 4. デプロイ前コマンド
+
+```bash
+npm install
+npm run db:migrate
+npm run verify
+```
+
+### 5. Vercelでの確認
+
+1. 最新commitをpush
+2. Vercel Deploymentsでビルド成功を確認
+3. `/api/health` を開き、`ok: true` と `database: "ok"` を確認
+4. `/login` でOWNERログイン
+5. `/candidates` → 候補者詳細 → スカウト → `/scouts` → `/messages` まで確認
+6. `/settings` から Billing、Users、Audit、Notifications に移動できることを確認
+7. `/terms`、`/privacy`、`/commercial-transaction`、`/contact` を確認
+
+### 6. 障害時対応
+
+DB接続エラー:
+
+- `/api/health` の `database` を確認
+- Vercelの `DATABASE_URL` がProductionに設定されているか確認
+- Neonが停止または上限到達していないか確認
+- `npm run db:migrate` が成功しているか確認
+
+Stripeエラー:
+
+- Billing画面の案内表示を確認
+- `STRIPE_SECRET_KEY`、Price ID、Webhook Secretを確認
+- Stripe Dashboard → Developers → Webhooks で送信結果を確認
+
+AIエラー:
+
+- `OPENAI_API_KEY` を確認
+- 未設定でもfallbackで動くため、`AiMatchResult.isFallback` を確認
+
+メール通知エラー:
+
+- `/settings/notifications` で `FAILED` または `SKIPPED` を確認
+- Resend API Key、送信元ドメイン認証、`EMAIL_FROM` を確認
+
+### 7. Rollback
+
+1. Vercel → Project → Deployments
+2. 直前に正常だったDeploymentを開く
+3. `Promote to Production` を実行
+4. DB migrationを戻す必要がある場合は、データ互換を壊さない追加migrationで対応します。手動でテーブルや列を削除しないでください。
+
+### 8. 本番前チェックリスト
+
+- `npm run verify` が成功している
+- `npm run db:migrate` が成功している
+- `ALLOW_BOOTSTRAP_ADMIN=false`
+- Basic認証が有効
+- OWNERが1名以上存在する
+- `/api/health` が正常
+- 法務ページの会社情報と問い合わせ先が実情報になっている
+- Stripe本番キーとWebhookが本番モード
+- Resend送信元ドメインが認証済み
+- OpenAI APIキーの利用上限と請求設定を確認済み
+- 個人情報・候補者情報の削除依頼フローが決まっている

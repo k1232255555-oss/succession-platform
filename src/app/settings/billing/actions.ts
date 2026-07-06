@@ -1,7 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { AuditAction, BillingPlan, BillingSubscriptionStatus } from "@prisma/client";
+import {
+  AuditAction,
+  BillingPlan,
+  BillingSubscriptionStatus,
+} from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
 import {
   getRequestContext,
@@ -13,6 +17,7 @@ import {
   getAppUrl,
   getOrCreateStripeCustomer,
   getPlanConfig,
+  getStripeMode,
   getStripeClient,
 } from "@/lib/billing";
 import { prisma } from "@/lib/prisma";
@@ -41,6 +46,14 @@ export async function startCheckoutAction(plan: BillingPlan) {
     );
   }
 
+  if (getStripeMode() !== "configured") {
+    redirect(
+      `/settings/billing?error=${encodeURIComponent(
+        "Stripe環境変数が未設定です。VercelにSTRIPE_SECRET_KEYを設定してください。",
+      )}`,
+    );
+  }
+
   const company = await prisma.company.findUnique({
     where: {
       id: user.companyId,
@@ -51,57 +64,69 @@ export async function startCheckoutAction(plan: BillingPlan) {
     redirect("/settings/billing?error=会社情報が見つかりません。");
   }
 
-  const stripe = getStripeClient();
-  const customerId = await getOrCreateStripeCustomer({
-    company,
-    user,
-  });
-  const returnUrl = getBillingReturnUrl();
+  const checkoutUrl = await (async () => {
+    try {
+      const stripe = getStripeClient();
+      const customerId = await getOrCreateStripeCustomer({
+        company,
+        user,
+      });
+      const returnUrl = getBillingReturnUrl();
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    line_items: [
-      {
-        price: planConfig.stripePriceId,
-        quantity: 1,
-      },
-    ],
-    success_url: `${returnUrl}?notice=${encodeURIComponent(
-      "決済手続きを開始しました。反映まで少し時間がかかる場合があります。",
-    )}`,
-    cancel_url: `${returnUrl}?error=${encodeURIComponent(
-      "決済手続きがキャンセルされました。",
-    )}`,
-    client_reference_id: company.id,
-    subscription_data: {
-      metadata: {
+      const session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        customer: customerId,
+        line_items: [
+          {
+            price: planConfig.stripePriceId,
+            quantity: 1,
+          },
+        ],
+        success_url: `${returnUrl}?notice=${encodeURIComponent(
+          "決済手続きを開始しました。反映まで少し時間がかかる場合があります。",
+        )}`,
+        cancel_url: `${returnUrl}?error=${encodeURIComponent(
+          "決済手続きがキャンセルされました。",
+        )}`,
+        client_reference_id: company.id,
+        subscription_data: {
+          metadata: {
+            companyId: company.id,
+            plan,
+          },
+        },
+        metadata: {
+          companyId: company.id,
+          plan,
+        },
+      });
+
+      await writeAuditLog({
+        action: AuditAction.BILLING_CHECKOUT_STARTED,
         companyId: company.id,
-        plan,
-      },
-    },
-    metadata: {
-      companyId: company.id,
-      plan,
-    },
-  });
+        actorId: user.id,
+        ...(await getRequestContext()),
+        metadata: {
+          plan,
+          stripeCheckoutSessionId: session.id,
+        },
+      });
 
-  await writeAuditLog({
-    action: AuditAction.BILLING_CHECKOUT_STARTED,
-    companyId: company.id,
-    actorId: user.id,
-    ...(await getRequestContext()),
-    metadata: {
-      plan,
-      stripeCheckoutSessionId: session.id,
-    },
-  });
+      return session.url;
+    } catch {
+      return null;
+    }
+  })();
 
-  if (!session.url) {
-    redirect("/settings/billing?error=Checkout URLを作成できませんでした。");
+  if (!checkoutUrl) {
+    redirect(
+      `/settings/billing?error=${encodeURIComponent(
+        "Stripe Checkoutを開始できませんでした。Stripe設定を確認してください。",
+      )}`,
+    );
   }
 
-  redirect(session.url);
+  redirect(checkoutUrl);
 }
 
 export async function startCustomerPortalAction() {
@@ -120,23 +145,49 @@ export async function startCustomerPortalAction() {
     redirect("/settings/billing?error=Stripe顧客情報がまだありません。");
   }
 
-  const stripe = getStripeClient();
-  const session = await stripe.billingPortal.sessions.create({
-    customer: company.stripeCustomerId,
-    return_url: getBillingReturnUrl(),
-  });
+  const stripeCustomerId = company.stripeCustomerId;
 
-  await writeAuditLog({
-    action: AuditAction.BILLING_PORTAL_STARTED,
-    companyId: company.id,
-    actorId: user.id,
-    ...(await getRequestContext()),
-    metadata: {
-      stripeCustomerId: company.stripeCustomerId,
-    },
-  });
+  if (getStripeMode() !== "configured") {
+    redirect(
+      `/settings/billing?error=${encodeURIComponent(
+        "Stripe環境変数が未設定です。Customer Portalは利用できません。",
+      )}`,
+    );
+  }
 
-  redirect(session.url);
+  const portalUrl = await (async () => {
+    try {
+      const stripe = getStripeClient();
+      const session = await stripe.billingPortal.sessions.create({
+        customer: stripeCustomerId,
+        return_url: getBillingReturnUrl(),
+      });
+
+      await writeAuditLog({
+        action: AuditAction.BILLING_PORTAL_STARTED,
+        companyId: company.id,
+        actorId: user.id,
+        ...(await getRequestContext()),
+        metadata: {
+          stripeCustomerId,
+        },
+      });
+
+      return session.url;
+    } catch {
+      return null;
+    }
+  })();
+
+  if (!portalUrl) {
+    redirect(
+      `/settings/billing?error=${encodeURIComponent(
+        "Customer Portalを開始できませんでした。Stripe設定を確認してください。",
+      )}`,
+    );
+  }
+
+  redirect(portalUrl);
 }
 
 export async function switchToFreeAction() {
