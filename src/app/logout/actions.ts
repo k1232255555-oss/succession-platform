@@ -3,9 +3,16 @@
 import { redirect } from "next/navigation";
 import { AuditAction } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
-import { destroySession, getCurrentUser, getRequestContext } from "@/lib/auth";
+import {
+  destroySession,
+  getCurrentUser,
+  getRequestContext,
+  requireSameOriginRequest,
+} from "@/lib/auth";
 
 export async function logoutAction() {
+  await requireSameOriginRequest();
+
   const user = await getCurrentUser();
   const requestContext = await getRequestContext();
 

@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { AuditAction, CandidateReviewStatus } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
-import { getRequestContext, requireRole, requireUser } from "@/lib/auth";
+import {
+  getRequestContext,
+  requireRole,
+  requireSameOriginRequest,
+  requireUser,
+} from "@/lib/auth";
 import { parseAge, parseLevel, splitList } from "@/lib/candidates";
 import { prisma } from "@/lib/prisma";
 
@@ -84,6 +89,8 @@ function getCandidateInput(
 }
 
 export async function createCandidateAction(formData: FormData) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   requireRole(user, ["OWNER"]);
 
@@ -125,6 +132,8 @@ export async function updateCandidateAction(
   candidateId: string,
   formData: FormData,
 ) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   requireRole(user, ["OWNER"]);
 
@@ -169,6 +178,8 @@ export async function updateCandidateAction(
 }
 
 export async function deleteCandidateAction(candidateId: string) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   requireRole(user, ["OWNER"]);
 

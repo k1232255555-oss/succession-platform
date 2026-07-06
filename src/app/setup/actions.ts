@@ -3,7 +3,11 @@
 import { redirect } from "next/navigation";
 import { AuditAction, UserRole } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
-import { createSession, getRequestContext } from "@/lib/auth";
+import {
+  createSession,
+  getRequestContext,
+  requireSameOriginRequest,
+} from "@/lib/auth";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 
@@ -24,6 +28,8 @@ export async function setupOwnerAction(
   _previousState: SetupState,
   formData: FormData,
 ): Promise<SetupState> {
+  await requireSameOriginRequest();
+
   if (process.env.ALLOW_BOOTSTRAP_ADMIN !== "true") {
     return {
       error: "初期セットアップは現在無効です。",

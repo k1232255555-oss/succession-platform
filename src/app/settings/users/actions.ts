@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/audit";
 import {
   canManageUsers,
   getRequestContext,
+  requireSameOriginRequest,
   requireUser,
 } from "@/lib/auth";
 import { getPlanConfig, isWithinLimit } from "@/lib/billing";
@@ -88,6 +89,8 @@ async function ensureOwnerContinuity(input: {
 }
 
 export async function createCompanyUserAction(formData: FormData) {
+  await requireSameOriginRequest();
+
   const actor = await ensureCanManageUsers();
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "")
@@ -148,6 +151,8 @@ export async function updateCompanyUserAction(
   targetUserId: string,
   formData: FormData,
 ) {
+  await requireSameOriginRequest();
+
   const actor = await ensureCanManageUsers();
   const name = String(formData.get("name") ?? "").trim();
   const role = parseRole(formData.get("role"), actor.role);
@@ -212,6 +217,8 @@ export async function resetCompanyUserPasswordAction(
   targetUserId: string,
   formData: FormData,
 ) {
+  await requireSameOriginRequest();
+
   const actor = await ensureCanManageUsers();
   const password = String(formData.get("password") ?? "");
 
@@ -269,6 +276,8 @@ export async function resetCompanyUserPasswordAction(
 }
 
 export async function revokeCompanyUserSessionsAction(targetUserId: string) {
+  await requireSameOriginRequest();
+
   const actor = await ensureCanManageUsers();
 
   const target = await prisma.companyUser.findFirst({

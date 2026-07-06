@@ -9,7 +9,11 @@ import {
   UserRole,
 } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
-import { getRequestContext, requireUser } from "@/lib/auth";
+import {
+  getRequestContext,
+  requireSameOriginRequest,
+  requireUser,
+} from "@/lib/auth";
 import { getThreadSubject, parseMessageBody } from "@/lib/messages";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
@@ -69,6 +73,8 @@ async function markThreadMessagesRead(input: {
 }
 
 export async function createMessageThreadAction(scoutRequestId: string) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
 
   const scout = await prisma.scoutRequest.findFirst({
@@ -137,6 +143,8 @@ export async function createMessageThreadAction(scoutRequestId: string) {
 }
 
 export async function sendMessageAction(threadId: string, formData: FormData) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   const body = parseMessageBody(formData.get("body"));
 
@@ -215,6 +223,8 @@ export async function sendMessageAction(threadId: string, formData: FormData) {
 }
 
 export async function markMessageThreadReadAction(threadId: string) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   const thread = await getAccessibleThread(threadId, user.companyId);
 
@@ -247,6 +257,8 @@ export async function markMessageThreadReadAction(threadId: string) {
 }
 
 export async function closeMessageThreadAction(threadId: string) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   const thread = await getAccessibleThread(threadId, user.companyId);
 

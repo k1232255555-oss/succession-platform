@@ -281,6 +281,20 @@ npm run db:migrate
 - 自分自身は停止できません。
 - ユーザー作成、更新、パスワード再設定、セッション失効は監査ログに記録されます。
 
+## セキュリティ
+
+本番向けの基本防御をアプリ側で有効化しています。
+
+- Basic認証ゲートは維持
+- HTTP only / Secure / SameSite=Lax のセッションCookie
+- Server Actions の更新系処理で同一オリジン確認
+- CSP、HSTS、Referrer-Policy、X-Frame-Options、X-Content-Type-Options
+- Cross-Origin-Opener-Policy、Cross-Origin-Resource-Policy
+- ログイン試行制限
+- 重要操作の監査ログ
+
+外部公開前に、Vercelの本番URLと `NEXT_PUBLIC_APP_URL` が一致していることを確認してください。独自ドメイン追加時は、環境変数を更新してRedeployします。
+
 ## 監査ログ検索
 
 `/settings/audit` で監査ログを検索できます。`OWNER / ADMIN` のみ閲覧可能です。

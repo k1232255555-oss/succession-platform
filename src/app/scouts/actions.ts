@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/audit";
 import {
   canScoutCandidates,
   getRequestContext,
+  requireSameOriginRequest,
   requireUser,
 } from "@/lib/auth";
 import {
@@ -32,6 +33,8 @@ export async function createScoutRequestAction(
   candidateId: string,
   formData: FormData,
 ) {
+  await requireSameOriginRequest();
+
   const user = await requireScoutPermission();
   const message = String(formData.get("message") ?? "").trim();
   const feeAcknowledged = formData.get("feeAcknowledged") === "on";
@@ -155,6 +158,8 @@ export async function updateScoutRequestAction(
   scoutRequestId: string,
   formData: FormData,
 ) {
+  await requireSameOriginRequest();
+
   const user = await requireScoutPermission();
   const status = parseScoutStatus(formData.get("status"));
   const proposedMeetingAt = parseMeetingDate(formData.get("proposedMeetingAt"));

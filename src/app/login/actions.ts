@@ -3,7 +3,11 @@
 import { redirect } from "next/navigation";
 import { AuditAction } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
-import { createSession, getRequestContext } from "@/lib/auth";
+import {
+  createSession,
+  getRequestContext,
+  requireSameOriginRequest,
+} from "@/lib/auth";
 import {
   isLoginRateLimited,
   recordLoginAttempt,
@@ -19,6 +23,8 @@ export async function loginAction(
   _previousState: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
+  await requireSameOriginRequest();
+
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();

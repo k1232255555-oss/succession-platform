@@ -134,3 +134,39 @@ export async function getRequestContext() {
     userAgent: headerStore.get("user-agent") ?? undefined,
   };
 }
+
+export async function requireSameOriginRequest() {
+  const headerStore = await headers();
+  const origin = headerStore.get("origin");
+
+  if (!origin) {
+    return;
+  }
+
+  const host =
+    headerStore.get("x-forwarded-host") ?? headerStore.get("host") ?? "";
+
+  try {
+    if (new URL(origin).host === host) {
+      return;
+    }
+  } catch {
+    throw new Error("Invalid request origin.");
+  }
+
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    try {
+      const appUrl = new URL(process.env.NEXT_PUBLIC_APP_URL);
+
+      if (origin === appUrl.origin) {
+        return;
+      }
+    } catch {
+      throw new Error("Invalid request origin.");
+    }
+  }
+
+  if (host) {
+    throw new Error("Invalid request origin.");
+  }
+}

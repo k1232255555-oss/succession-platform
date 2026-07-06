@@ -5,6 +5,7 @@ import { AuditAction, BillingPlan, BillingSubscriptionStatus } from "@prisma/cli
 import { writeAuditLog } from "@/lib/audit";
 import {
   getRequestContext,
+  requireSameOriginRequest,
   requireUser,
 } from "@/lib/auth";
 import {
@@ -21,6 +22,8 @@ function getBillingReturnUrl() {
 }
 
 export async function startCheckoutAction(plan: BillingPlan) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   assertCanManageBilling(user);
 
@@ -102,6 +105,8 @@ export async function startCheckoutAction(plan: BillingPlan) {
 }
 
 export async function startCustomerPortalAction() {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   assertCanManageBilling(user);
 
@@ -135,6 +140,8 @@ export async function startCustomerPortalAction() {
 }
 
 export async function switchToFreeAction() {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   assertCanManageBilling(user);
 

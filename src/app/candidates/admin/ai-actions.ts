@@ -4,11 +4,18 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { AuditAction } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit";
-import { getRequestContext, requireRole, requireUser } from "@/lib/auth";
+import {
+  getRequestContext,
+  requireRole,
+  requireSameOriginRequest,
+  requireUser,
+} from "@/lib/auth";
 import { recalculateAiMatch } from "@/lib/ai-matching";
 import { prisma } from "@/lib/prisma";
 
 export async function recalculateCandidateAiMatchAction(candidateId: string) {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   requireRole(user, ["OWNER"]);
 
@@ -55,6 +62,8 @@ export async function recalculateCandidateAiMatchAction(candidateId: string) {
 }
 
 export async function recalculateAllCandidateAiMatchesAction() {
+  await requireSameOriginRequest();
+
   const user = await requireUser();
   requireRole(user, ["OWNER"]);
 
