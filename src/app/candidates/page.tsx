@@ -20,6 +20,7 @@ import {
   type SuccessorCandidate,
 } from "@prisma/client";
 import { canManageCandidates, requireUser } from "@/lib/auth";
+import { formatPlanLimit, getPlanConfig } from "@/lib/billing";
 import {
   getCandidateScore,
   reviewStatusLabels,
@@ -153,6 +154,10 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
   const skill = getParam(params, "skill")?.trim() ?? "";
   const status = getParam(params, "status")?.trim() ?? "";
   const featured = getParam(params, "featured") === "on";
+  const planConfig = getPlanConfig(user.company.billingPlan);
+  const visibleCandidateLimit = planConfig.limits.visibleCandidates;
+  const candidateTake =
+    visibleCandidateLimit === "unlimited" ? undefined : visibleCandidateLimit;
 
   const where: Prisma.SuccessorCandidateWhereInput = {
     companyId: user.companyId,
@@ -196,6 +201,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
     prisma.successorCandidate.findMany({
       where,
       orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
+      take: candidateTake,
     }),
     prisma.successorCandidate.findMany({
       where: { companyId: user.companyId },
@@ -385,7 +391,10 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
           </div>
           <div className="hidden items-center gap-2 text-sm text-zinc-500 sm:flex">
             <Target className="h-4 w-4 text-amber-300" />
-            <span>AI・現場・意欲を5段階で評価</span>
+            <span>
+              {planConfig.name}プラン表示上限:{" "}
+              {formatPlanLimit(visibleCandidateLimit)}
+            </span>
           </div>
         </section>
 

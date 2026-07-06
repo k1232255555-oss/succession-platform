@@ -9,6 +9,11 @@ import {
   getRequestContext,
   requireUser,
 } from "@/lib/auth";
+import {
+  getPlanConfig,
+  hasActiveBillingAccess,
+  isWithinLimit,
+} from "@/lib/billing";
 import { prisma } from "@/lib/prisma";
 import { parseMeetingDate, parseScoutStatus } from "@/lib/scouts";
 
@@ -43,6 +48,42 @@ export async function createScoutRequestAction(
     redirect(
       `/candidates/${candidateId}?error=${encodeURIComponent(
         "マッチング料発生の確認にチェックしてください。",
+      )}`,
+    );
+  }
+
+  const planConfig = getPlanConfig(user.company.billingPlan);
+
+  if (
+    !hasActiveBillingAccess({
+      plan: user.company.billingPlan,
+      status: user.company.billingStatus,
+    })
+  ) {
+    redirect(
+      `/candidates/${candidateId}?error=${encodeURIComponent(
+        "決済状態の確認が必要です。Billing画面で支払い状況を確認してください。",
+      )}`,
+    );
+  }
+
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const monthlyScoutCount = await prisma.scoutRequest.count({
+    where: {
+      companyId: user.companyId,
+      createdAt: {
+        gte: monthStart,
+      },
+    },
+  });
+
+  if (!isWithinLimit(monthlyScoutCount, planConfig.limits.scoutsPerMonth)) {
+    redirect(
+      `/candidates/${candidateId}?error=${encodeURIComponent(
+        "現在のプランの月間スカウト上限に達しています。",
       )}`,
     );
   }

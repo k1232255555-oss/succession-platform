@@ -45,6 +45,9 @@ ALLOW_BOOTSTRAP_ADMIN=false
 STRIPE_SECRET_KEY=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
+STRIPE_STANDARD_PRICE_ID=
+STRIPE_PREMIUM_PRICE_ID=
+STRIPE_ENTERPRISE_PRICE_ID=
 ```
 
 ## DBセットアップ
@@ -88,12 +91,15 @@ BASIC_AUTH_PASSWORD=your-basic-password
 ALLOW_BOOTSTRAP_ADMIN=false
 ```
 
-Stripeはまだ未使用なので空で大丈夫です。将来決済を入れる時に設定します。
+Stripe Checkout、Customer Portal、Webhook を使う場合は以下を設定します。Freeプランのみで運用する間は空でもビルドは通ります。
 
 ```bash
 STRIPE_SECRET_KEY=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
+STRIPE_STANDARD_PRICE_ID=
+STRIPE_PREMIUM_PRICE_ID=
+STRIPE_ENTERPRISE_PRICE_ID=
 ```
 
 ### migration か db:push か
@@ -337,6 +343,45 @@ npm run db:seed
 
 スカウト作成と状態更新は監査ログに記録されます。`feeAcknowledged` により、マッチング料発生を確認したうえで送信した履歴もDBに残ります。
 
+## Stripe決済
+
+`/settings/billing` でプラン、利用状況、Checkout、Customer Portal、請求履歴を管理できます。
+
+プラン:
+
+- `FREE`: ユーザー1名、候補者表示5名、月間スカウト1件
+- `STANDARD`: ユーザー3名、候補者表示50名、月間スカウト10件
+- `PREMIUM`: ユーザー10名、候補者表示200名、月間スカウト50件
+- `ENTERPRISE`: 無制限、個別契約
+
+Stripe Dashboard で必要な作業:
+
+1. Products で `Standard`、`Premium`、必要なら `Enterprise` を作成
+2. 各Productに recurring price を作成
+3. Price ID を Vercel の Environment Variables に設定
+4. Customer Portal を有効化
+5. Webhook endpoint に `https://your-production-domain.example/api/stripe/webhook` を登録
+6. Webhook signing secret を `STRIPE_WEBHOOK_SECRET` に設定
+
+Webhookで処理するイベント:
+
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.created`
+- `invoice.finalized`
+- `invoice.paid`
+- `invoice.payment_failed`
+
+支払い失敗時は会社の `billingStatus` を `PAST_DUE` に更新し、新規スカウト送信を止めます。既存データの閲覧は止めません。
+
+本番反映後は migration を適用してください。
+
+```bash
+npm run db:migrate
+```
+
 ## Vercel設定
 
 - Framework Preset: Next.js
@@ -396,13 +441,3 @@ NEXT_PUBLIC_APP_URL="https://your-production-domain.example"
 ```
 
 空の `.env.local` や `.env` が残っていると、Prismaは `DATABASE_URL resolved to an empty string` で失敗します。このプロジェクトでは `npm run db:migrate` と `npm run db:push` の前に `DATABASE_URL` の空チェックを行います。
-
-## Stripe連携の次ステップ
-
-現時点では課金処理は未実装です。次フェーズで以下を追加します。
-
-- Stripe Customer 作成
-- Checkout Session 作成
-- Webhook 受信
-- subscription status の同期
-- 請求管理画面

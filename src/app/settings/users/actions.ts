@@ -9,6 +9,7 @@ import {
   getRequestContext,
   requireUser,
 } from "@/lib/auth";
+import { getPlanConfig, isWithinLimit } from "@/lib/billing";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 
@@ -98,6 +99,22 @@ export async function createCompanyUserAction(formData: FormData) {
   if (!name || !email || password.length < 12) {
     redirect(
       "/settings/users?error=名前、メールアドレス、12文字以上の初期パスワードを入力してください。",
+    );
+  }
+
+  const planConfig = getPlanConfig(actor.company.billingPlan);
+  const activeUserCount = await prisma.companyUser.count({
+    where: {
+      companyId: actor.companyId,
+      isActive: true,
+    },
+  });
+
+  if (!isWithinLimit(activeUserCount, planConfig.limits.users)) {
+    redirect(
+      `/settings/users?error=${encodeURIComponent(
+        "現在のプランで作成できるユーザー数の上限に達しています。",
+      )}`,
     );
   }
 

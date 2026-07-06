@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileSearch, UsersRound } from "lucide-react";
+import { CreditCard, FileSearch, UsersRound } from "lucide-react";
 import { formatAuditAction } from "@/lib/audit";
 import { requireRole, requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -58,6 +58,13 @@ export default async function SecuritySettingsPage() {
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
+            <Link
+              href="/settings/billing"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
+            >
+              <CreditCard className="h-4 w-4" />
+              決済管理
+            </Link>
             <Link
               href="/settings/audit"
               className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"

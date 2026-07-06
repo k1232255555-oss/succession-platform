@@ -29,6 +29,10 @@ enum AuditAction {
   SCOUT_CREATED
   SCOUT_UPDATED
   STRIPE_CUSTOMER_LINKED
+  BILLING_CHECKOUT_STARTED
+  BILLING_PORTAL_STARTED
+  BILLING_SUBSCRIPTION_UPDATED
+  BILLING_PAYMENT_FAILED
 }
 
 enum CandidateReviewStatus {
@@ -49,36 +53,68 @@ enum ScoutStatus {
   CANCELED
 }
 
+enum BillingPlan {
+  FREE
+  STANDARD
+  PREMIUM
+  ENTERPRISE
+}
+
+enum BillingSubscriptionStatus {
+  FREE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+}
+
+enum BillingInvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  VOID
+  UNCOLLECTIBLE
+}
+
 model Company {
-  id                   String        @id @default(cuid())
-  name                 String
-  slug                 String        @unique
-  status               String        @default("active")
-  stripeCustomerId     String?       @unique
-  stripeSubscriptionId String?       @unique
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  auditLogs            AuditLog[]
-  candidates           SuccessorCandidate[]
-  scoutRequests        ScoutRequest[]
-  users                CompanyUser[]
+  id                           String                    @id @default(cuid())
+  name                         String
+  slug                         String                    @unique
+  status                       String                    @default("active")
+  billingPlan                  BillingPlan               @default(FREE)
+  billingStatus                BillingSubscriptionStatus @default(FREE)
+  stripeCustomerId             String?                   @unique
+  stripeSubscriptionId         String?                   @unique
+  stripePriceId                String?
+  subscriptionCurrentPeriodEnd DateTime?
+  createdAt                    DateTime                  @default(now())
+  updatedAt                    DateTime                  @updatedAt
+  auditLogs                    AuditLog[]
+  billingInvoices              BillingInvoice[]
+  candidates                   SuccessorCandidate[]
+  scoutRequests                ScoutRequest[]
+  stripeWebhookEvents          StripeWebhookEvent[]
+  users                        CompanyUser[]
 }
 
 model CompanyUser {
-  id           String     @id @default(cuid())
-  companyId    String
-  email        String     @unique
-  name         String
-  role         UserRole   @default(MEMBER)
-  passwordHash String
-  isActive     Boolean    @default(true)
-  lastLoginAt  DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  auditLogs    AuditLog[]
-  company      Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id            String         @id @default(cuid())
+  companyId     String
+  email         String         @unique
+  name          String
+  role          UserRole       @default(MEMBER)
+  passwordHash  String
+  isActive      Boolean        @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  auditLogs     AuditLog[]
+  company       Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   scoutRequests ScoutRequest[]
-  sessions     Session[]
+  sessions      Session[]
 
   @@index([companyId])
   @@index([role])
@@ -98,16 +134,16 @@ model Session {
 }
 
 model AuditLog {
-  id        String      @id @default(cuid())
+  id        String       @id @default(cuid())
   companyId String
   actorId   String?
   action    AuditAction
   ipAddress String?
   userAgent String?
   metadata  Json?
-  createdAt DateTime    @default(now())
+  createdAt DateTime     @default(now())
   actor     CompanyUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
-  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId, createdAt])
   @@index([actorId])
@@ -124,6 +160,41 @@ model LoginAttempt {
   @@index([email, createdAt])
   @@index([ipAddress, createdAt])
   @@index([success, createdAt])
+}
+
+model BillingInvoice {
+  id                   String               @id @default(cuid())
+  companyId            String
+  stripeInvoiceId      String               @unique
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  number               String?
+  status               BillingInvoiceStatus
+  amountDue            Int                  @default(0)
+  amountPaid           Int                  @default(0)
+  currency             String               @default("jpy")
+  hostedInvoiceUrl     String?
+  invoicePdf           String?
+  dueDate              DateTime?
+  paidAt               DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  company              Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+  @@index([status])
+}
+
+model StripeWebhookEvent {
+  id            String   @id @default(cuid())
+  companyId     String?
+  stripeEventId String   @unique
+  type          String
+  processedAt   DateTime @default(now())
+  company       Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([type])
 }
 
 model SuccessorCandidate {
