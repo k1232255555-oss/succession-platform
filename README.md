@@ -295,6 +295,22 @@ npm run db:migrate
 
 外部公開前に、Vercelの本番URLと `NEXT_PUBLIC_APP_URL` が一致していることを確認してください。独自ドメイン追加時は、環境変数を更新してRedeployします。
 
+## ヘルスチェック
+
+`/api/health` でアプリとDB接続の簡易確認ができます。Basic認証が有効な本番では、通常のBasic認証を通したうえで確認します。
+
+正常時:
+
+```json
+{
+  "ok": true,
+  "database": "ok",
+  "latencyMs": 12
+}
+```
+
+DB接続に失敗している場合は HTTP 503 と `database: "unavailable"` を返します。
+
 ## 監査ログ検索
 
 `/settings/audit` で監査ログを検索できます。`OWNER / ADMIN` のみ閲覧可能です。
