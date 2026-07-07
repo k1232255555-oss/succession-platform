@@ -8,6 +8,8 @@ const optionalServiceKeys = [
   "OPENAI_API_KEY",
   "RESEND_API_KEY",
   "EMAIL_FROM",
+  "CONTACT_TO_EMAIL",
+  "SUPPORT_EMAIL",
 ] as const;
 
 export function getEnvValue(key: string) {
