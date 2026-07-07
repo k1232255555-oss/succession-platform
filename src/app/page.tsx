@@ -62,6 +62,7 @@ export default async function DashboardPage() {
     prisma.successorCandidate.findMany({
       where: {
         companyId: user.companyId,
+        reviewStatus: CandidateReviewStatus.APPROVED,
       },
       orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
       take: 4,
@@ -402,7 +403,7 @@ export default async function DashboardPage() {
                 <span>Successor Candidates</span>
               </div>
               <h3 className="mt-2 text-2xl font-semibold text-white">
-                審査中・公開済みの承継候補者
+                公開中の承継候補者
               </h3>
             </div>
 
@@ -498,8 +499,11 @@ export default async function DashboardPage() {
             ))}
             {successorCandidates.length === 0 ? (
               <div className="rounded border border-zinc-800 bg-zinc-950/85 p-6 md:col-span-2 xl:col-span-4">
-                <p className="text-sm leading-6 text-zinc-400">
-                  現在、審査済み候補者を準備中です。候補者登録・審査が完了次第、順次公開されます。Founding Membersは無料で先行登録できます。
+                <p className="text-base font-semibold text-white">
+                  現在、公開中の承継候補者はありません。
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-400">
+                  Succession Clubは現在クローズドβとして、候補者本人の同意が取れたプロフィールのみ順次公開しています。
                 </p>
               </div>
             ) : null}

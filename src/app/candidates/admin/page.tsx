@@ -9,6 +9,7 @@ import {
   Trash2,
   UsersRound,
 } from "lucide-react";
+import { CandidateReviewStatus } from "@prisma/client";
 import { recalculateAllCandidateAiMatchesAction } from "@/app/candidates/admin/ai-actions";
 import { deleteCandidateAction } from "@/app/candidates/admin/actions";
 import { requireRole, requireUser } from "@/lib/auth";
@@ -39,6 +40,7 @@ export default async function CandidateAdminPage({ searchParams }: PageProps) {
   const candidates = await prisma.successorCandidate.findMany({
     where: {
       companyId: user.companyId,
+      reviewStatus: CandidateReviewStatus.APPROVED,
     },
     orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
   });

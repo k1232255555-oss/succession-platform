@@ -86,7 +86,6 @@ export default async function CandidateDetailPage({
   const user = await requireUser();
   const { id } = await params;
   const query = (await searchParams) ?? {};
-  const canManage = canManageCandidates(user);
 
   const [company, candidate] = await Promise.all([
     prisma.company.findUnique({
@@ -98,7 +97,7 @@ export default async function CandidateDetailPage({
       where: {
         id,
         companyId: user.companyId,
-        ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
+        reviewStatus: CandidateReviewStatus.APPROVED,
       },
       include: {
         aiMatchResults: {

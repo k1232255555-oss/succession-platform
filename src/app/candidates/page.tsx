@@ -186,14 +186,17 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
   const sort = getParam(params, "sort")?.trim() ?? "ai";
   const featured = getParam(params, "featured") === "on";
   const canManage = canManageCandidates(user);
+  const publishedCandidateWhere = {
+    companyId: user.companyId,
+    reviewStatus: CandidateReviewStatus.APPROVED,
+  } satisfies Prisma.SuccessorCandidateWhereInput;
   const planConfig = getEffectivePlanConfig(user.company.billingPlan);
   const visibleCandidateLimit = planConfig.limits.visibleCandidates;
   const candidateTake =
     visibleCandidateLimit === "unlimited" ? undefined : visibleCandidateLimit;
 
   const where: Prisma.SuccessorCandidateWhereInput = {
-    companyId: user.companyId,
-    ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
+    ...publishedCandidateWhere,
   };
 
   if (q) {
@@ -217,14 +220,8 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
     where.skills = { has: skill };
   }
 
-  if (
-    canManage &&
-    status &&
-    Object.values(CandidateReviewStatus).includes(
-      status as CandidateReviewStatus,
-    )
-  ) {
-    where.reviewStatus = status as CandidateReviewStatus;
+  if (status && status !== CandidateReviewStatus.APPROVED) {
+    where.id = "__NO_APPROVED_CANDIDATE_MATCH__";
   }
 
   if (featured) {
@@ -255,26 +252,17 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
       take: candidateTake,
     }),
     prisma.successorCandidate.findMany({
-      where: {
-        companyId: user.companyId,
-        ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
-      },
+      where: publishedCandidateWhere,
       distinct: ["region"],
       orderBy: { region: "asc" },
       select: { region: true },
     }),
     prisma.successorCandidate.findMany({
-      where: {
-        companyId: user.companyId,
-        ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
-      },
+      where: publishedCandidateWhere,
       select: { desiredIndustries: true },
     }),
     prisma.successorCandidate.findMany({
-      where: {
-        companyId: user.companyId,
-        ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
-      },
+      where: publishedCandidateWhere,
       select: { skills: true },
     }),
   ]);
