@@ -141,7 +141,7 @@ OPENAI_MATCHING_MODEL=gpt-5.5-mini
 NOTIFICATION_EMAILS_ENABLED=true
 RESEND_API_KEY=
 EMAIL_FROM=Succession Club <no-reply@your-production-domain.example>
-NOTIFICATION_REPLY_TO=support@your-production-domain.example
+NOTIFICATION_REPLY_TO=
 CONTACT_TO_EMAIL=operator@example.com
 SUPPORT_EMAIL=
 ```
@@ -691,7 +691,7 @@ Resend:
 NOTIFICATION_EMAILS_ENABLED=true
 RESEND_API_KEY=
 EMAIL_FROM=Succession Club <no-reply@your-production-domain.example>
-NOTIFICATION_REPLY_TO=support@your-production-domain.example
+NOTIFICATION_REPLY_TO=
 CONTACT_TO_EMAIL=operator@example.com
 SUPPORT_EMAIL=
 ```
