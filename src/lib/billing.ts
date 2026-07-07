@@ -118,8 +118,9 @@ export function getEffectivePlanConfig(plan: BillingPlan) {
 
   return {
     ...getPlanConfig(BillingPlan.FREE),
-    description: "β期間中は無料で候補者検索、参考分析、対話申請、メッセージを利用できます。",
-    priceLabel: "β期間中無料",
+    description:
+      "招待制クローズドβ期間中は、審査制で最大10社まで無料で利用できます。",
+    priceLabel: "クローズドβ無料",
     limits: {
       users: "unlimited",
       visibleCandidates: "unlimited",

@@ -40,8 +40,6 @@ const navItems = [
   { label: "設定", href: "/settings", icon: Settings, active: false },
 ];
 
-const foundingMemberLimit = 50;
-
 export default async function DashboardPage() {
   const user = await requireUser();
   const monthStart = new Date();
@@ -153,11 +151,6 @@ export default async function DashboardPage() {
       note: "初期メンバー募集中",
     },
   ];
-  const foundingMemberRemaining = Math.max(
-    foundingMemberLimit - companyCount,
-    0,
-  );
-
   const pipelineItems = [
     {
       label: "対話申請",
@@ -301,11 +294,7 @@ export default async function DashboardPage() {
                 <span className="text-zinc-300">{user.role}</span>
               </p>
               <p className="text-sm text-zinc-400">
-                Founding Members 残り{" "}
-                <span className="font-semibold text-amber-200">
-                  {foundingMemberRemaining.toLocaleString("ja-JP")}
-                </span>
-                社
+                招待制クローズドβ / 審査制で最大10社まで無料
               </p>
             </div>
           </section>
@@ -345,8 +334,10 @@ export default async function DashboardPage() {
                   </h3>
                 </div>
                 <p className="text-sm text-zinc-400">
-                  β期間中:{" "}
-                  <span className="font-semibold text-amber-200">無料で利用可能</span>
+                  <span className="font-semibold text-amber-200">
+                    招待制クローズドβ
+                  </span>
+                  : 審査制で最大10社まで無料
                 </p>
               </div>
 
@@ -580,7 +571,7 @@ export default async function DashboardPage() {
                     候補者公開後に、丁寧な対話から開始
                   </h3>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                    Founding Membersは、候補者検索、参考分析、対話申請、メッセージをβ期間中無料で利用できます。
+                    現在、招待制クローズドβとして運営しています。β期間中は、審査制で最大10社まで無料でご利用いただけます。
                   </p>
                 </div>
                 <Link

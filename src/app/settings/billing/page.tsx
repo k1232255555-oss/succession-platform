@@ -130,7 +130,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
               決済とプラン管理
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              β期間中は無料で利用できます。Stripe課金コードは残しており、課金開始時に切り替えられます。
+              現在、招待制クローズドβとして運営しています。β期間中は、審査制で最大10社まで無料でご利用いただけます。
             </p>
           </div>
 
@@ -161,7 +161,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
 
         {!stripeBillingEnabled ? (
           <div className="mt-5 rounded border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
-            現在はβ期間中のため無料運用中です。参考分析、対話申請、メッセージは追加課金なしで利用できます。
+            Stripe課金は現在OFFです。クローズドβ期間中は、審査制で最大10社まで無料運用します。
           </div>
         ) : !stripeConfigured ? (
           <div className="mt-5 rounded border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
@@ -287,7 +287,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
                       disabled
                       className="inline-flex h-11 w-full items-center justify-center rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 opacity-80"
                     >
-                      β期間中は無料
+                      審査制クローズドβ無料
                     </button>
                   ) : isFree ? (
                     <form action={switchToFreeAction}>

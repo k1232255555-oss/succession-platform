@@ -497,10 +497,10 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
           <section className="mt-5 rounded border border-zinc-800 bg-black/35 p-8 text-center">
             <Zap className="mx-auto h-8 w-8 text-amber-300" />
             <h2 className="mt-4 text-xl font-semibold text-white">
-              現在、審査済み候補者を準備中です
+              現在、公開中の承継候補者はありません。
             </h2>
             <p className="mt-3 text-sm leading-6 text-zinc-400">
-              候補者登録・審査が完了次第、順次公開されます。β参加企業は無料で先行登録できます。
+              Succession Clubは現在クローズドβとして、候補者本人の同意が取れたプロフィールのみ順次公開しています。
             </p>
           </section>
         )}
