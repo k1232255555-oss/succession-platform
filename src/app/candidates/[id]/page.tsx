@@ -19,7 +19,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { AuditAction } from "@prisma/client";
+import { AuditAction, CandidateReviewStatus } from "@prisma/client";
 import { recalculateCandidateAiMatchAction } from "@/app/candidates/admin/ai-actions";
 import { deleteCandidateAction } from "@/app/candidates/admin/actions";
 import { createMessageThreadAction } from "@/app/messages/actions";
@@ -86,6 +86,7 @@ export default async function CandidateDetailPage({
   const user = await requireUser();
   const { id } = await params;
   const query = (await searchParams) ?? {};
+  const canManage = canManageCandidates(user);
 
   const [company, candidate] = await Promise.all([
     prisma.company.findUnique({
@@ -97,6 +98,7 @@ export default async function CandidateDetailPage({
       where: {
         id,
         companyId: user.companyId,
+        ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
       },
       include: {
         aiMatchResults: {

@@ -185,6 +185,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
   const status = getParam(params, "status")?.trim() ?? "";
   const sort = getParam(params, "sort")?.trim() ?? "ai";
   const featured = getParam(params, "featured") === "on";
+  const canManage = canManageCandidates(user);
   const planConfig = getEffectivePlanConfig(user.company.billingPlan);
   const visibleCandidateLimit = planConfig.limits.visibleCandidates;
   const candidateTake =
@@ -192,6 +193,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
 
   const where: Prisma.SuccessorCandidateWhereInput = {
     companyId: user.companyId,
+    ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
   };
 
   if (q) {
@@ -216,6 +218,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
   }
 
   if (
+    canManage &&
     status &&
     Object.values(CandidateReviewStatus).includes(
       status as CandidateReviewStatus,
@@ -252,17 +255,26 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
       take: candidateTake,
     }),
     prisma.successorCandidate.findMany({
-      where: { companyId: user.companyId },
+      where: {
+        companyId: user.companyId,
+        ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
+      },
       distinct: ["region"],
       orderBy: { region: "asc" },
       select: { region: true },
     }),
     prisma.successorCandidate.findMany({
-      where: { companyId: user.companyId },
+      where: {
+        companyId: user.companyId,
+        ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
+      },
       select: { desiredIndustries: true },
     }),
     prisma.successorCandidate.findMany({
-      where: { companyId: user.companyId },
+      where: {
+        companyId: user.companyId,
+        ...(canManage ? {} : { reviewStatus: CandidateReviewStatus.APPROVED }),
+      },
       select: { skills: true },
     }),
   ]);
@@ -319,7 +331,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
             </p>
           </div>
 
-          {canManageCandidates(user) ? (
+          {canManage ? (
             <div className="flex flex-col gap-2 sm:flex-row">
               <Link
                 href="/candidates/admin"
