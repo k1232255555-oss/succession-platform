@@ -89,8 +89,9 @@ export default function PublicHomePage() {
               <LockKeyhole className="h-4 w-4" />
               招待制クローズドβ
             </div>
-            <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-              未来へ、事業をつなぐ。
+            <h1 className="mt-6 max-w-5xl text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl lg:text-5xl xl:text-6xl">
+              <span className="inline-block">未来へ、</span>
+              <span className="inline-block">事業をつなぐ。</span>
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-300 sm:text-lg">
               後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
