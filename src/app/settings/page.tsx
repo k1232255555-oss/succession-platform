@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Bell,
+  BriefcaseBusiness,
   CreditCard,
   Database,
   FileSearch,
@@ -43,6 +44,13 @@ const settingLinks = [
     icon: Database,
   },
   {
+    href: "/settings/businesses",
+    label: "承継プロジェクト確認",
+    description: "残したい事業の登録内容、確認状態、匿名性リスクをOWNERのみ確認します。",
+    icon: BriefcaseBusiness,
+    ownerOnly: true,
+  },
+  {
     href: "/settings/notifications",
     label: "通知ログ",
     description: "メール通知の送信、スキップ、失敗履歴を確認します。",
@@ -53,6 +61,9 @@ const settingLinks = [
 export default async function SettingsPage() {
   const user = await requireUser();
   requireRole(user, ["OWNER", "ADMIN"]);
+  const visibleSettingLinks = settingLinks.filter(
+    (item) => !("ownerOnly" in item) || user.role === "OWNER",
+  );
 
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 sm:px-6 lg:px-10">
@@ -68,7 +79,7 @@ export default async function SettingsPage() {
         </header>
 
         <section className="grid gap-4 py-6 md:grid-cols-2">
-          {settingLinks.map((item) => {
+          {visibleSettingLinks.map((item) => {
             const Icon = item.icon;
 
             return (

@@ -42,6 +42,11 @@ enum AuditAction {
   NOTIFICATION_EMAIL_FAILED
   SUCCESSION_BRIEF_SUBMITTED
   SUCCESSION_BRIEF_REVIEWED
+  BUSINESS_OPPORTUNITY_CREATED
+  BUSINESS_OPPORTUNITY_UPDATED
+  BUSINESS_OPPORTUNITY_SUBMITTED_FOR_REVIEW
+  BUSINESS_OPPORTUNITY_PUBLISHED
+  BUSINESS_OPPORTUNITY_ARCHIVED
 }
 
 enum CandidateReviewStatus {
@@ -141,6 +146,19 @@ enum BriefStatus {
   ARCHIVED
 }
 
+enum BusinessOpportunityVisibility {
+  PRIVATE
+  LIMITED
+  PUBLIC
+}
+
+enum BusinessOpportunityStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
 model Company {
   id                           String                    @id @default(cuid())
   name                         String
@@ -156,6 +174,7 @@ model Company {
   updatedAt                    DateTime                  @updatedAt
   auditLogs                    AuditLog[]
   billingInvoices              BillingInvoice[]
+  businessOpportunities        BusinessOpportunity[]
   candidates                   SuccessorCandidate[]
   aiMatchResults               AiMatchResult[]
   messageThreads               MessageThread[]
@@ -178,6 +197,7 @@ model CompanyUser {
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
   auditLogs             AuditLog[]
+  createdBusinessOpportunities BusinessOpportunity[] @relation("BusinessOpportunityCreatedBy")
   company               Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdMessageThreads MessageThread[]      @relation("MessageThreadCreatedBy")
   messageReadReceipts   MessageReadReceipt[]
@@ -189,6 +209,32 @@ model CompanyUser {
 
   @@index([companyId])
   @@index([role])
+}
+
+model BusinessOpportunity {
+  id                      String                        @id @default(cuid())
+  companyId               String
+  createdById             String?
+  title                   String                        @db.VarChar(80)
+  industry                String
+  region                  String?
+  summary                 String                        @db.VarChar(500)
+  strengths               String[]
+  successionNeeds         String[]
+  preferredSuccessorTypes String[]
+  visibility              BusinessOpportunityVisibility @default(PRIVATE)
+  status                  BusinessOpportunityStatus     @default(DRAFT)
+  isAnonymous             Boolean                       @default(true)
+  sensitiveInfoFlag       Boolean                       @default(false)
+  createdAt               DateTime                      @default(now())
+  updatedAt               DateTime                      @updatedAt
+  company                 Company                       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy               CompanyUser?                  @relation("BusinessOpportunityCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([createdById])
+  @@index([visibility, status])
+  @@index([createdAt])
 }
 
 model SuccessionBrief {

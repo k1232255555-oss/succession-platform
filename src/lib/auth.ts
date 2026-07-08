@@ -114,6 +114,10 @@ export function canManageCandidates(user: Pick<CompanyUser, "role">) {
   return user.role === "OWNER";
 }
 
+export function canManageBusinessOpportunities(user: Pick<CompanyUser, "role">) {
+  return user.role === "OWNER" || user.role === "ADMIN" || user.role === "MEMBER";
+}
+
 export function canScoutCandidates(user: Pick<CompanyUser, "role">) {
   return user.role === "OWNER" || user.role === "ADMIN" || user.role === "MEMBER";
 }

@@ -33,6 +33,7 @@ export const dynamic = "force-dynamic";
 
 const navItems = [
   { label: "ダッシュボード", href: "/", icon: Home, active: true },
+  { label: "残したい事業", href: "/businesses", icon: BriefcaseBusiness, active: false },
   { label: "引き継ぎ希望者を探す", href: "/candidates", icon: UserRoundSearch, active: false },
   { label: "対話申請", href: "/scouts", icon: Handshake, active: false },
   { label: "メッセージ", href: "/messages", icon: MessageCircle, active: false },
