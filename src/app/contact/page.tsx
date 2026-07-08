@@ -18,6 +18,13 @@ export default async function ContactPage({ searchParams }: PageProps) {
   const params = (await searchParams) ?? {};
   const notice = getParam(params, "notice");
   const error = getParam(params, "error");
+  const topic = getParam(params, "topic") ?? "";
+  const topicCategoryMap: Record<string, string> = {
+    "founding-member": "Founding Members参加希望",
+    sponsor: "協賛・連携の相談",
+    support: "活動応援・広報協力",
+  };
+  const defaultCategory = topicCategoryMap[topic] ?? "導入相談";
   const supportEmail = process.env.SUPPORT_EMAIL?.trim() ?? "";
   const contactEmailConfigured = Boolean(
     process.env.RESEND_API_KEY?.trim() &&
@@ -113,9 +120,12 @@ export default async function ContactPage({ searchParams }: PageProps) {
                 <select
                   name="category"
                   className="mt-2 h-11 w-full rounded border border-zinc-800 bg-black px-3 text-sm text-zinc-100 outline-none focus:border-amber-300/50"
-                  defaultValue="導入相談"
+                  defaultValue={defaultCategory}
                 >
                   <option>導入相談</option>
+                  <option>Founding Members参加希望</option>
+                  <option>協賛・連携の相談</option>
+                  <option>活動応援・広報協力</option>
                   <option>候補者情報の訂正・削除依頼</option>
                   <option>個人情報の取り扱い</option>
                   <option>請求・契約</option>

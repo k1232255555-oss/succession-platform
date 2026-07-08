@@ -31,6 +31,16 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+const shareText = [
+  "後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、招待制クローズドβ「Succession Club」。",
+  "未来へ、事業をつなぐ。",
+  "https://succession-platform-iota.vercel.app",
+].join("\n");
+
+const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+  shareText,
+)}`;
+
 const navItems = [
   { label: "ダッシュボード", href: "/", icon: Home, active: true },
   { label: "残したい事業", href: "/businesses", icon: BriefcaseBusiness, active: false },
@@ -583,6 +593,91 @@ export default async function DashboardPage() {
                   引き継ぎ希望者を確認
                   <ChevronRight className="h-4 w-4" />
                 </Link>
+              </div>
+            </div>
+          </section>
+
+          <section className="border-t border-zinc-800 py-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Co-Creation</span>
+                </div>
+                <h3 className="mt-2 text-2xl font-semibold text-white">
+                  この活動を一緒に育てる
+                </h3>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400">
+                  Succession Clubは、地域の事業を未来へつなぐためのクローズドβです。資金募集ではなく、共創・連携・応援に関心のある方との対話を受け付けています。
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-3">
+              <article className="rounded border border-zinc-800 bg-black/30 p-5">
+                <p className="text-sm font-semibold text-amber-100">
+                  第1期 Founding Members
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-400">
+                  事業承継の新しい選択肢を一緒に育てる、最大10社の共創枠です。β期間中は無料でご利用いただけますが、無料キャンペーンではありません。
+                </p>
+                <Link
+                  href="/contact?topic=founding-member"
+                  className="mt-5 inline-flex h-10 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
+                >
+                  共創メンバーに関心がある
+                </Link>
+              </article>
+
+              <article className="rounded border border-zinc-800 bg-black/30 p-5">
+                <p className="text-sm font-semibold text-amber-100">
+                  協賛・連携に関心のある方
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-400">
+                  士業、金融機関、地域団体、企業、教育機関など、地域の事業承継を一緒に支える連携を検討しています。まずはお問い合わせください。
+                </p>
+                <Link
+                  href="/contact?topic=sponsor"
+                  className="mt-5 inline-flex h-10 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
+                >
+                  協賛・連携を相談する
+                </Link>
+              </article>
+
+              <article className="rounded border border-zinc-800 bg-black/30 p-5">
+                <p className="text-sm font-semibold text-amber-100">
+                  活動を応援したい方
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-400">
+                  後継者不足の認知拡大、クローズドβ参加者への情報提供、サービス改善に関心のある方はお問い合わせください。現在、サイト上での決済は受け付けていません。
+                </p>
+                <Link
+                  href="/contact?topic=support"
+                  className="mt-5 inline-flex h-10 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
+                >
+                  活動応援について問い合わせる
+                </Link>
+              </article>
+            </div>
+
+            <div className="mt-4 rounded border border-zinc-800 bg-zinc-950/80 p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-zinc-100">
+                    この活動を共有する
+                  </p>
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-400">
+                    {shareText}
+                  </p>
+                </div>
+                <a
+                  href={shareUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-10 shrink-0 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
+                >
+                  Xで共有する
+                </a>
               </div>
             </div>
           </section>
