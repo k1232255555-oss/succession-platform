@@ -39,7 +39,7 @@ const settingLinks = [
   {
     href: "/settings/succession-briefs",
     label: "承継ブリーフ",
-    description: "匿名・構造化された承継論点データと集計を確認します。",
+    description: "マッチング前の論点整理を支える匿名データと集計を確認します。",
     icon: Database,
   },
   {

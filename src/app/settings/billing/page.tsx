@@ -97,7 +97,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
       limit: currentPlan.limits.users,
     },
     {
-      label: "候補者表示",
+      label: "プロフィール表示",
       value: currentPlan.limits.visibleCandidates,
       limit: currentPlan.limits.visibleCandidates,
     },
@@ -265,7 +265,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
                 <div className="mt-5 space-y-2 text-sm text-zinc-300">
                   <p>ユーザー: {formatPlanLimit(plan.limits.users)}</p>
                   <p>
-                    候補者表示: {formatPlanLimit(plan.limits.visibleCandidates)}
+                    プロフィール表示: {formatPlanLimit(plan.limits.visibleCandidates)}
                   </p>
                   <p>
                     月間対話申請: {formatPlanLimit(plan.limits.scoutsPerMonth)}

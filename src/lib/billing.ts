@@ -44,7 +44,7 @@ export const billingPlans: BillingPlanConfig[] = [
   {
     plan: BillingPlan.STANDARD,
     name: "Standard",
-    description: "小規模企業が本格的に候補者探索を始めるプラン。",
+    description: "小規模な承継対話を始めるための将来プラン。",
     priceLabel: "月額 Standard",
     stripePriceId: process.env.STRIPE_STANDARD_PRICE_ID?.trim() || undefined,
     limits: {
@@ -56,7 +56,7 @@ export const billingPlans: BillingPlanConfig[] = [
   {
     plan: BillingPlan.PREMIUM,
     name: "Premium",
-    description: "複数の関係者で対話申請と面談を進める組織向けプラン。",
+    description: "複数の関係者で承継対話と面談を進める将来プラン。",
     priceLabel: "月額 Premium",
     stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID?.trim() || undefined,
     limits: {

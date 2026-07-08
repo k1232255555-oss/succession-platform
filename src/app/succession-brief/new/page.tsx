@@ -83,14 +83,14 @@ export default async function NewSuccessionBriefPage({
 
         <header className="mt-6 border-b border-zinc-800 pb-6">
           <p className="text-sm font-medium text-amber-200/80">
-            Succession Issue Graph
+            論点整理
           </p>
           <h1 className="mt-3 text-3xl font-semibold text-white">
             承継ブリーフ
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400">
-            事業承継の現場で、何が話を前に進め、何が止めているのかを匿名・構造化して整理します。
-            企業名や個人名ではなく、承継論点の蓄積を目的とした入力です。
+            マッチング前に、事業承継の状況や詰まりポイントを匿名・構造化して整理します。
+            企業名や個人名ではなく、承継に向けた対話を進めやすくするための補助入力です。
           </p>
         </header>
 
@@ -256,7 +256,7 @@ export default async function NewSuccessionBriefPage({
             </div>
             <p className="mt-3 text-xs leading-5 text-zinc-500">
               「本人保存用」は匿名集計にも運営確認にも使いません。
-              Succession Issue Graphの主データは「匿名集計のみ利用」です。
+              匿名集計に使う補助データは「匿名集計のみ利用」を選んだ内容だけです。
             </p>
           </section>
 

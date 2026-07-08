@@ -148,7 +148,7 @@ export const issueCategoryOptions = [
   { value: "customer_continuity", label: "顧客・取引先継続" },
   { value: "financial_transparency", label: "財務透明性" },
   { value: "business_attractiveness", label: "事業の魅力整理" },
-  { value: "candidate_search", label: "候補者探索" },
+  { value: "candidate_search", label: "引き継ぎ希望者の探索" },
   { value: "expert_consultation", label: "専門家相談" },
 ] as const;
 
@@ -158,7 +158,7 @@ export const nextActionOptions = [
   { value: "consult_tax_accountant", label: "税理士へ相談する" },
   { value: "consult_financial_institution", label: "金融機関へ相談する" },
   { value: "organize_business_strengths", label: "事業の強みを整理する" },
-  { value: "organize_for_successor", label: "候補者に伝える情報を整理する" },
+  { value: "organize_for_successor", label: "引き継ぎ希望者に伝える情報を整理する" },
   { value: "consult_expert", label: "専門家に相談する" },
   { value: "not_sure", label: "まだ分からない" },
 ] as const;

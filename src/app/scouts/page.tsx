@@ -81,7 +81,7 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
               対話申請の進行管理
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              候補者との初回対話、面談調整、承諾・辞退までの状態を丁寧に管理します。
+              引き継ぎ希望者との初回対話、面談調整、承諾・辞退までの状態を丁寧に管理します。
             </p>
           </div>
 
@@ -89,7 +89,7 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
             href="/candidates"
             className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
           >
-            候補者を探す
+            引き継ぎ希望者を探す
             <ArrowUpRight className="h-4 w-4" />
           </Link>
         </header>
@@ -263,7 +263,7 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
             対話申請はまだありません
               </h2>
               <p className="mt-3 text-sm text-zinc-400">
-                候補者詳細ページから対話申請を開始できます。
+                プロフィール詳細ページから対話申請を開始できます。
               </p>
             </section>
           ) : null}

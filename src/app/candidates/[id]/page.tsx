@@ -167,7 +167,7 @@ export default async function CandidateDetailPage({
               className="inline-flex items-center gap-2 text-sm font-medium text-amber-200/80 transition hover:text-amber-100"
             >
               <ArrowLeft className="h-4 w-4" />
-              候補者一覧へ戻る
+              引き継ぎ希望者一覧へ戻る
             </Link>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className="rounded border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-xs font-semibold text-amber-200">

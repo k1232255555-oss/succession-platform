@@ -312,10 +312,10 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
               Dashboard
             </Link>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              承継の選択肢を探す
+              引き継ぎ希望者を探す
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              M&A、親族承継、従業員承継に加わるもう一つの選択肢として、審査済みプロフィールを確認できます。
+              年齢や経歴を限定せず、事業を引き継いで挑戦したい人の審査済みプロフィールを確認できます。
             </p>
           </div>
 
@@ -333,7 +333,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
                 className="inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
               >
                 <UserRoundPlus className="h-4 w-4" />
-                候補者を登録
+                引き継ぎ希望者を登録
               </Link>
             </div>
           ) : null}
@@ -497,10 +497,10 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
           <section className="mt-5 rounded border border-zinc-800 bg-black/35 p-8 text-center">
             <Zap className="mx-auto h-8 w-8 text-amber-300" />
             <h2 className="mt-4 text-xl font-semibold text-white">
-              現在、公開中の承継候補者はありません。
+              現在、公開中の引き継ぎ希望者はありません。
             </h2>
             <p className="mt-3 text-sm leading-6 text-zinc-400">
-              Succession Clubは現在クローズドβとして、候補者本人の同意が取れたプロフィールのみ順次公開しています。
+              Succession Clubは現在クローズドβとして、本人の同意が取れたプロフィールのみ順次公開しています。
             </p>
           </section>
         )}

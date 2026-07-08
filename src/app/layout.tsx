@@ -11,7 +11,8 @@ export const metadata: Metadata = {
     default: "Succession Club | 未来へ、事業をつなぐ。",
     template: "%s | Succession Club",
   },
-  description: "日本の事業承継を支える中立的なプラットフォーム",
+  description:
+    "後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービス。",
   applicationName: "Succession Club",
   authors: [{ name: "Succession Club" }],
   robots: {
@@ -20,7 +21,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Succession Club | 未来へ、事業をつなぐ。",
-    description: "M&A、親族承継、従業員承継に加わる、事業承継のもう一つの選択肢。",
+    description:
+      "後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービス。",
     url: appUrl,
     siteName: "Succession Club",
     locale: "ja_JP",

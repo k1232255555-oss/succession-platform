@@ -33,7 +33,7 @@ export const dynamic = "force-dynamic";
 
 const navItems = [
   { label: "ダッシュボード", href: "/", icon: Home, active: true },
-  { label: "後継者候補を探す", href: "/candidates", icon: UserRoundSearch, active: false },
+  { label: "引き継ぎ希望者を探す", href: "/candidates", icon: UserRoundSearch, active: false },
   { label: "対話申請", href: "/scouts", icon: Handshake, active: false },
   { label: "メッセージ", href: "/messages", icon: MessageCircle, active: false },
   { label: "承継ブリーフ", href: "/succession-brief/new", icon: BriefcaseBusiness, active: false },
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
       note: "β登録受付中",
     },
     {
-      label: "審査済み候補者",
+      label: "公開中の引き継ぎ希望者",
       value: approvedCandidateCount,
       suffix: "名",
       note: "審査完了後に順次公開",
@@ -156,7 +156,7 @@ export default async function DashboardPage() {
     {
       label: "対話申請",
       value: monthlyScoutCount,
-      note: "候補者公開後に利用できます",
+      note: "プロフィール公開後に利用できます",
       icon: Handshake,
     },
     {
@@ -254,14 +254,14 @@ export default async function DashboardPage() {
                 未来へ、事業をつなぐ。
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                企業オーナー、後継者、従業員、家族にとって納得できる承継の選択肢を、誠実に増やしていきます。
+                後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
               </p>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                aria-label="候補者を検索"
+                aria-label="引き継ぎ希望者を検索"
                 className="grid h-11 w-11 place-items-center rounded border border-zinc-800 bg-zinc-900/80 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200"
               >
                 <Search className="h-5 w-5" />
@@ -278,7 +278,7 @@ export default async function DashboardPage() {
                 className="hidden h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black shadow-[0_0_28px_rgba(251,191,36,0.22)] transition hover:bg-amber-200 sm:inline-flex"
               >
                 <Handshake className="h-4 w-4" />
-                候補者を見る
+                引き継ぎ希望者を見る
               </Link>
               <LogoutButton />
             </div>
@@ -376,13 +376,13 @@ export default async function DashboardPage() {
               </div>
               <div className="mt-4 space-y-3">
                 <p className="text-sm leading-6 text-zinc-300">
-                  現在はβ版として、候補者登録と審査を進めています。
+                  現在はβ版として、事業者と引き継ぎ希望者の登録・審査を丁寧に進めています。
                 </p>
                 <p className="text-sm leading-6 text-zinc-300">
-                  審査済み候補者のみ順次公開し、実績がない数字は表示しません。
+                  本人同意と審査が確認できたプロフィールのみ順次公開し、実績がない数字は表示しません。
                 </p>
                 <p className="text-sm leading-6 text-zinc-300">
-                  AIは判断材料の一つです。承継の意思決定を代替するものではありません。
+                  参考分析は判断材料の一つです。承継の意思決定を代替するものではありません。
                 </p>
               </div>
             </div>
@@ -392,10 +392,10 @@ export default async function DashboardPage() {
             <div>
               <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
                 <Flame className="h-4 w-4" />
-                <span>Successor Candidates</span>
+                <span>Succession Partners</span>
               </div>
               <h3 className="mt-2 text-2xl font-semibold text-white">
-                公開中の承継候補者
+                公開中の引き継ぎ希望者
               </h3>
             </div>
 
@@ -492,10 +492,10 @@ export default async function DashboardPage() {
             {successorCandidates.length === 0 ? (
               <div className="rounded border border-zinc-800 bg-zinc-950/85 p-6 md:col-span-2 xl:col-span-4">
                 <p className="text-base font-semibold text-white">
-                  現在、公開中の承継候補者はありません。
+                  現在、公開中の引き継ぎ希望者はありません。
                 </p>
                 <p className="mt-3 text-sm leading-6 text-zinc-400">
-                  Succession Clubは現在クローズドβとして、候補者本人の同意が取れたプロフィールのみ順次公開しています。
+                  Succession Clubは現在クローズドβとして、本人の同意が取れたプロフィールのみ順次公開しています。
                 </p>
               </div>
             ) : null}
@@ -569,7 +569,7 @@ export default async function DashboardPage() {
                     <span>Next Best Action</span>
                   </div>
                   <h3 className="mt-2 text-xl font-semibold text-white">
-                    候補者公開後に、丁寧な対話から開始
+                    プロフィール公開後に、丁寧な対話から開始
                   </h3>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
                     現在、招待制クローズドβとして運営しています。β期間中は、審査制で最大10社まで無料でご利用いただけます。
@@ -579,7 +579,7 @@ export default async function DashboardPage() {
                   href="/candidates"
                   className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
                 >
-                  候補者を確認
+                  引き継ぎ希望者を確認
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
