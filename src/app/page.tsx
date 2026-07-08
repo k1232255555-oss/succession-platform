@@ -36,6 +36,7 @@ const navItems = [
   { label: "後継者候補を探す", href: "/candidates", icon: UserRoundSearch, active: false },
   { label: "対話申請", href: "/scouts", icon: Handshake, active: false },
   { label: "メッセージ", href: "/messages", icon: MessageCircle, active: false },
+  { label: "承継ブリーフ", href: "/succession-brief/new", icon: BriefcaseBusiness, active: false },
   { label: "決済管理", href: "/settings/billing", icon: CreditCard, active: false },
   { label: "設定", href: "/settings", icon: Settings, active: false },
 ];

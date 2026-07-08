@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   Bell,
   CreditCard,
+  Database,
   FileSearch,
   ShieldCheck,
   UsersRound,
@@ -34,6 +35,12 @@ const settingLinks = [
     label: "監査ログ",
     description: "ログイン、候補者、対話申請、決済、通知の操作履歴を検索します。",
     icon: FileSearch,
+  },
+  {
+    href: "/settings/succession-briefs",
+    label: "承継ブリーフ",
+    description: "匿名・構造化された承継論点データと集計を確認します。",
+    icon: Database,
   },
   {
     href: "/settings/notifications",

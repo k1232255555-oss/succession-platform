@@ -40,6 +40,8 @@ enum AuditAction {
   BILLING_PAYMENT_FAILED
   NOTIFICATION_EMAIL_SENT
   NOTIFICATION_EMAIL_FAILED
+  SUCCESSION_BRIEF_SUBMITTED
+  SUCCESSION_BRIEF_REVIEWED
 }
 
 enum CandidateReviewStatus {
@@ -115,6 +117,30 @@ enum NotificationType {
   MESSAGE_THREAD_CLOSED
 }
 
+enum SuccessionStage {
+  NOT_STARTED
+  ORGANIZING_INFORMATION
+  DISCUSSING_WITH_STAKEHOLDERS
+  SUCCESSOR_CANDIDATE_EXISTS
+  CONSIDERING_EXTERNAL_SUCCESSION
+  CONSIDERING_M_AND_A
+  CONSULTING_EXPERTS
+  PREPARING_TRANSITION
+  UNKNOWN
+}
+
+enum BriefVisibilityScope {
+  PRIVATE
+  AGGREGATE_ONLY
+  SHARE_WITH_OPERATOR
+}
+
+enum BriefStatus {
+  SUBMITTED
+  REVIEWED
+  ARCHIVED
+}
+
 model Company {
   id                           String                    @id @default(cuid())
   name                         String
@@ -159,9 +185,48 @@ model CompanyUser {
   sentMessages          Message[]
   scoutRequests         ScoutRequest[]
   sessions              Session[]
+  successionBriefs      SuccessionBrief[]
 
   @@index([companyId])
   @@index([role])
+}
+
+model SuccessionBrief {
+  id                String                         @id @default(cuid())
+  createdByUserId   String?
+  industry          String
+  prefecture        String?
+  businessSummary   String?                        @db.VarChar(500)
+  successionStage   SuccessionStage
+  visibilityScope   BriefVisibilityScope
+  valueCategories   String[]
+  stakeholderTypes  String[]
+  issueCategories   String[]
+  unresolvedItems   String[]
+  nextActions       String[]
+  status            BriefStatus                    @default(SUBMITTED)
+  sensitiveInfoFlag Boolean                        @default(false)
+  createdAt         DateTime                       @default(now())
+  updatedAt         DateTime                       @updatedAt
+  contactRequest    SuccessionBriefContactRequest?
+  createdBy         CompanyUser?                   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdByUserId])
+  @@index([visibilityScope, status, sensitiveInfoFlag])
+  @@index([industry])
+  @@index([prefecture])
+  @@index([successionStage])
+  @@index([createdAt])
+}
+
+model SuccessionBriefContactRequest {
+  id        String          @id @default(cuid())
+  briefId   String          @unique
+  email     String
+  name      String?
+  message   String?         @db.VarChar(500)
+  createdAt DateTime        @default(now())
+  brief     SuccessionBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
 }
 
 model Session {
