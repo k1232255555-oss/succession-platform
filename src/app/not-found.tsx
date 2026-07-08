@@ -20,7 +20,7 @@ export default function NotFound() {
           className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
         >
           <ArrowLeft className="h-4 w-4" />
-          ダッシュボードへ戻る
+          トップへ戻る
         </Link>
       </section>
     </main>

@@ -159,7 +159,7 @@ export async function createBusinessOpportunityAction(formData: FormData) {
   const user = await requireUser();
 
   if (!canManageBusinessOpportunities(user)) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   const input = getBusinessOpportunityInput(formData);
@@ -200,7 +200,7 @@ export async function updateBusinessOpportunityAction(
   const user = await requireUser();
 
   if (!canManageBusinessOpportunities(user)) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   const input = getBusinessOpportunityInput(formData);
@@ -255,7 +255,7 @@ export async function submitBusinessOpportunityForReviewAction(
   const user = await requireUser();
 
   if (!canManageBusinessOpportunities(user)) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   const opportunity = await prisma.businessOpportunity.update({

@@ -17,7 +17,7 @@ export default async function SetupPage() {
   ]);
 
   if (user) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   if (existingUsers > 0) {

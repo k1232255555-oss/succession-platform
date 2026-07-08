@@ -36,7 +36,7 @@ async function ensureCanManageUsers() {
   const user = await requireUser();
 
   if (!canManageUsers(user)) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   return user;

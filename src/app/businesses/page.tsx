@@ -40,7 +40,7 @@ export default async function BusinessesPage() {
         <header className="flex flex-col gap-4 border-b border-zinc-800 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <Link
-              href="/"
+              href="/dashboard"
               className="inline-flex items-center gap-2 text-sm font-medium text-amber-200/80 transition hover:text-amber-100"
             >
               <BriefcaseBusiness className="h-4 w-4" />

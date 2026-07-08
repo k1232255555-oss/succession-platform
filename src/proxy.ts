@@ -3,6 +3,33 @@ import { NextResponse, type NextRequest } from "next/server";
 const username = process.env.BASIC_AUTH_USER;
 const password = process.env.BASIC_AUTH_PASSWORD;
 
+const publicExactPaths = new Set([
+  "/",
+  "/contact",
+  "/terms",
+  "/privacy",
+  "/commercial-transaction",
+  "/api/health",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/favicon.ico",
+]);
+
+const publicPathPrefixes = [
+  "/_next/static/",
+  "/_next/image/",
+  "/assets/",
+  "/images/",
+  "/icons/",
+];
+
+function isPublicPath(pathname: string) {
+  return (
+    publicExactPaths.has(pathname) ||
+    publicPathPrefixes.some((prefix) => pathname.startsWith(prefix))
+  );
+}
+
 function unauthorized() {
   return new NextResponse("Authentication required.", {
     status: 401,
@@ -32,6 +59,10 @@ function readBasicCredentials(authorization: string) {
 }
 
 export function proxy(request: NextRequest) {
+  if (isPublicPath(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   if (!username || !password) {
     return NextResponse.next();
   }
@@ -55,5 +86,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt).*)"],
+  matcher: ["/((?!_next/static|_next/image).*)"],
 };

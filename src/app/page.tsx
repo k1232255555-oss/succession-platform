@@ -1,35 +1,16 @@
 import {
   ArrowUpRight,
-  Bell,
   BriefcaseBusiness,
-  CalendarClock,
-  ChevronRight,
-  CreditCard,
-  Crown,
-  Flame,
+  Building2,
   Handshake,
-  Home,
+  HeartHandshake,
+  Landmark,
   LockKeyhole,
-  MapPin,
-  MessageCircle,
-  Search,
-  Settings,
   ShieldCheck,
   Sparkles,
-  Star,
-  Target,
-  TrendingUp,
-  UserRoundSearch,
-  Zap,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
-import { CandidateReviewStatus, ScoutStatus } from "@prisma/client";
-import { LogoutButton } from "@/app/logout-button";
-import { requireUser } from "@/lib/auth";
-import { getCandidateScore } from "@/lib/candidates";
-import { prisma } from "@/lib/prisma";
-
-export const dynamic = "force-dynamic";
 
 const shareText = [
   "後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、招待制クローズドβ「Succession Club」。",
@@ -41,648 +22,235 @@ const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
   shareText,
 )}`;
 
-const navItems = [
-  { label: "ダッシュボード", href: "/", icon: Home, active: true },
-  { label: "残したい事業", href: "/businesses", icon: BriefcaseBusiness, active: false },
-  { label: "引き継ぎ希望者を探す", href: "/candidates", icon: UserRoundSearch, active: false },
-  { label: "対話申請", href: "/scouts", icon: Handshake, active: false },
-  { label: "メッセージ", href: "/messages", icon: MessageCircle, active: false },
-  { label: "承継ブリーフ", href: "/succession-brief/new", icon: BriefcaseBusiness, active: false },
-  { label: "決済管理", href: "/settings/billing", icon: CreditCard, active: false },
-  { label: "設定", href: "/settings", icon: Settings, active: false },
-];
+const contactLinks = [
+  {
+    title: "第1期 Founding Members",
+    body: "事業承継の新しい選択肢を一緒に育てる、最大10社の共創枠です。β期間中は無料でご利用いただけますが、無料キャンペーンではありません。",
+    href: "/contact?topic=founding-member",
+    label: "共創メンバーに関心がある",
+    icon: UsersRound,
+  },
+  {
+    title: "協賛・連携に関心のある方",
+    body: "士業、金融機関、地域団体、企業、教育機関など、地域の事業承継を一緒に支える連携を検討しています。まずはお問い合わせください。",
+    href: "/contact?topic=sponsor",
+    label: "協賛・連携を相談する",
+    icon: Landmark,
+  },
+  {
+    title: "活動を応援したい方",
+    body: "後継者不足の認知拡大、クローズドβ参加者への情報提供、サービス改善に関心のある方はお問い合わせください。現在、サイト上での決済は受け付けていません。",
+    href: "/contact?topic=support",
+    label: "活動応援について問い合わせる",
+    icon: HeartHandshake,
+  },
+] as const;
 
-export default async function DashboardPage() {
-  const user = await requireUser();
-  const monthStart = new Date();
-  monthStart.setDate(1);
-  monthStart.setHours(0, 0, 0, 0);
-
-  const [
-    successorCandidates,
-    companyCount,
-    approvedCandidateCount,
-    monthlyMatchingCount,
-    monthlyScoutCount,
-    meetingScoutCount,
-    acceptedScoutCount,
-    openThreadCount,
-    recentThreads,
-  ] = await Promise.all([
-    prisma.successorCandidate.findMany({
-      where: {
-        companyId: user.companyId,
-        reviewStatus: CandidateReviewStatus.APPROVED,
-      },
-      orderBy: [{ isFeatured: "desc" }, { updatedAt: "desc" }],
-      take: 4,
-    }),
-    prisma.company.count(),
-    prisma.successorCandidate.count({
-      where: {
-        companyId: user.companyId,
-        reviewStatus: CandidateReviewStatus.APPROVED,
-      },
-    }),
-    prisma.scoutRequest.count({
-      where: {
-        companyId: user.companyId,
-        status: ScoutStatus.ACCEPTED,
-        updatedAt: {
-          gte: monthStart,
-        },
-      },
-    }),
-    prisma.scoutRequest.count({
-      where: {
-        companyId: user.companyId,
-        createdAt: {
-          gte: monthStart,
-        },
-      },
-    }),
-    prisma.scoutRequest.count({
-      where: {
-        companyId: user.companyId,
-        status: ScoutStatus.MEETING,
-      },
-    }),
-    prisma.scoutRequest.count({
-      where: {
-        companyId: user.companyId,
-        status: ScoutStatus.ACCEPTED,
-      },
-    }),
-    prisma.messageThread.count({
-      where: {
-        companyId: user.companyId,
-        status: "OPEN",
-      },
-    }),
-    prisma.messageThread.findMany({
-      where: {
-        companyId: user.companyId,
-      },
-      include: {
-        scoutRequest: {
-          include: {
-            candidate: true,
-          },
-        },
-        messages: {
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
-        },
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: 2,
-    }),
-  ]);
-
-  const tractionStats = [
-    {
-      label: "参加企業",
-      value: companyCount,
-      suffix: "社",
-      note: "β登録受付中",
-    },
-    {
-      label: "公開中の引き継ぎ希望者",
-      value: approvedCandidateCount,
-      suffix: "名",
-      note: "審査完了後に順次公開",
-    },
-    {
-      label: "今月の承継対話",
-      value: monthlyMatchingCount,
-      suffix: "件",
-      note: "初期メンバー募集中",
-    },
-  ];
-  const pipelineItems = [
-    {
-      label: "対話申請",
-      value: monthlyScoutCount,
-      note: "プロフィール公開後に利用できます",
-      icon: Handshake,
-    },
-    {
-      label: "面談調整中",
-      value: meetingScoutCount,
-      note: "承諾後に進行",
-      icon: CalendarClock,
-    },
-    {
-      label: "成立済み",
-      value: acceptedScoutCount,
-      note: "実データのみ集計",
-      icon: Crown,
-    },
-    {
-      label: "オープンスレッド",
-      value: openThreadCount,
-      note: "メッセージ開始後に表示",
-      icon: MessageCircle,
-    },
-  ];
-
+export default function PublicHomePage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.13),transparent_34%),linear-gradient(135deg,#09090b_0%,#18181b_48%,#030303_100%)]" />
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.11),transparent_34%),linear-gradient(135deg,#09090b_0%,#18181b_50%,#030303_100%)]" />
 
-      <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col lg:flex-row">
-        <aside className="border-b border-amber-300/10 bg-black/55 px-4 py-4 backdrop-blur-xl lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:border-b-0 lg:border-r lg:px-6 lg:py-8">
-          <div className="flex items-center justify-between lg:block">
+      <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:px-10">
+        <header className="flex items-center justify-between border-b border-zinc-800/80 pb-5">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="grid h-11 w-11 place-items-center rounded border border-amber-300/25 bg-amber-300/10 text-amber-200">
+              <BriefcaseBusiness className="h-5 w-5" />
+            </div>
             <div>
-              <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded border border-amber-300/30 bg-amber-300/10 text-amber-300 shadow-[0_0_24px_rgba(212,175,55,0.16)]">
-                  <BriefcaseBusiness className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-amber-200/80">
-                    Succession Club
-                  </p>
-                  <h1 className="text-lg font-semibold tracking-wide text-white">
-                    未来へ、事業をつなぐ。
-                  </h1>
-                </div>
+              <p className="text-sm font-medium text-amber-200/80">
+                Succession Club
+              </p>
+              <p className="text-base font-semibold text-white">
+                未来へ、事業をつなぐ。
+              </p>
+            </div>
+          </Link>
+
+          <nav className="flex items-center gap-2">
+            <Link
+              href="/contact"
+              className="hidden h-10 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100 sm:inline-flex"
+            >
+              お問い合わせ
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center justify-center rounded border border-zinc-800 px-3 text-sm font-semibold text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100"
+            >
+              関係者ログイン
+            </Link>
+          </nav>
+        </header>
+
+        <div className="grid flex-1 items-center gap-10 py-14 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
+          <section>
+            <div className="inline-flex items-center gap-2 rounded border border-amber-300/20 bg-amber-300/10 px-3 py-1.5 text-sm font-medium text-amber-200">
+              <LockKeyhole className="h-4 w-4" />
+              招待制クローズドβ
+            </div>
+            <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+              未来へ、事業をつなぐ。
+            </h1>
+            <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-300 sm:text-lg">
+              後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
+            </p>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-400">
+              M&A、親族承継、従業員承継を否定せず、もう一つの選択肢として、地域の技術・雇用・関係性を未来へつなぐことを目指しています。
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/contact?topic=founding-member"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-100 transition hover:bg-amber-300/10"
+              >
+                Founding Membersに関心がある
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex h-11 items-center justify-center rounded border border-zinc-700 px-4 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
+              >
+                問い合わせる
+              </Link>
+            </div>
+          </section>
+
+          <section className="rounded border border-zinc-800 bg-black/35 p-5">
+            <div className="flex items-center gap-2 text-amber-200">
+              <ShieldCheck className="h-4 w-4" />
+              <h2 className="text-sm font-semibold">信頼を優先するβ運営</h2>
+            </div>
+            <div className="mt-5 grid gap-3">
+              <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
+                <p className="text-sm font-semibold text-white">
+                  実績を盛りません
+                </p>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">
+                  ダミーの参加企業数、候補者数、マッチング実績は表示しません。
+                </p>
+              </div>
+              <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
+                <p className="text-sm font-semibold text-white">
+                  本人同意を重視します
+                </p>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">
+                  候補者情報や承継プロジェクトは、同意と確認を前提に扱います。
+                </p>
+              </div>
+              <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
+                <p className="text-sm font-semibold text-white">
+                  AIは参考情報です
+                </p>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">
+                  参考分析が承継や契約判断を自動決定することはありません。
+                </p>
               </div>
             </div>
+          </section>
+        </div>
 
-            <button
-              type="button"
-              aria-label="通知"
-              className="grid h-10 w-10 place-items-center rounded border border-zinc-800 bg-zinc-950 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200 lg:hidden"
-            >
-              <Bell className="h-5 w-5" />
-            </button>
+        <section className="grid gap-4 border-t border-zinc-800 py-8 md:grid-cols-2">
+          <article className="rounded border border-zinc-800 bg-black/30 p-5">
+            <div className="flex items-center gap-2 text-amber-200">
+              <Building2 className="h-4 w-4" />
+              <h2 className="text-sm font-semibold">事業を残したい方へ</h2>
+            </div>
+            <p className="mt-3 text-sm leading-7 text-zinc-400">
+              会社名や財務情報をいきなり公開せず、残したい価値、承継の課題、引き継いでほしいことを整理するところから始めます。
+            </p>
+          </article>
+
+          <article className="rounded border border-zinc-800 bg-black/30 p-5">
+            <div className="flex items-center gap-2 text-amber-200">
+              <Handshake className="h-4 w-4" />
+              <h2 className="text-sm font-semibold">事業を引き継ぎたい方へ</h2>
+            </div>
+            <p className="mt-3 text-sm leading-7 text-zinc-400">
+              年齢や肩書きに限定せず、地域の事業を引き継いで挑戦したい個人、経験者、同業者、移住希望者などを想定しています。
+            </p>
+          </article>
+        </section>
+
+        <section className="border-t border-zinc-800 py-8">
+          <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
+            <Sparkles className="h-4 w-4" />
+            <span>Co-Creation</span>
           </div>
+          <h2 className="mt-2 text-2xl font-semibold text-white">
+            この活動を一緒に育てる
+          </h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400">
+            Succession Clubは、地域の事業を未来へつなぐためのクローズドβです。資金募集ではなく、共創・連携・応援に関心のある方との対話を受け付けています。
+          </p>
 
-          <nav className="mt-5 flex gap-2 overflow-x-auto pb-1 lg:mt-10 lg:flex-col lg:overflow-visible lg:pb-0">
-            {navItems.map((item) => {
+          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+            {contactLinks.map((item) => {
               const Icon = item.icon;
 
               return (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className={`group flex min-w-max items-center gap-3 rounded px-4 py-3 text-sm font-medium transition ${
-                    item.active
-                      ? "border border-amber-300/30 bg-amber-300/10 text-amber-200 shadow-[0_0_26px_rgba(212,175,55,0.12)]"
-                      : "border border-transparent text-zinc-400 hover:border-zinc-800 hover:bg-zinc-900/80 hover:text-zinc-100"
-                  }`}
+                <article
+                  key={item.title}
+                  className="rounded border border-zinc-800 bg-black/30 p-5"
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </a>
+                  <div className="flex items-center gap-2 text-amber-100">
+                    <Icon className="h-4 w-4" />
+                    <p className="text-sm font-semibold">{item.title}</p>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-zinc-400">
+                    {item.body}
+                  </p>
+                  <Link
+                    href={item.href}
+                    className="mt-5 inline-flex h-10 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
+                  >
+                    {item.label}
+                  </Link>
+                </article>
               );
             })}
-          </nav>
-
-          <div className="mt-8 hidden rounded border border-amber-300/15 bg-zinc-950/80 p-4 lg:block">
-            <div className="flex items-center gap-2 text-amber-200">
-              <ShieldCheck className="h-4 w-4" />
-              <p className="text-sm font-semibold">中立・完全審査制</p>
-            </div>
-            <p className="mt-3 text-xs leading-6 text-zinc-400">
-              M&A、親族承継、従業員承継を否定せず、もう一つの選択肢として事業承継を支えます。
-            </p>
           </div>
-        </aside>
 
-        <section className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
-          <header className="flex flex-col gap-4 border-b border-zinc-800/80 pb-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
-                <Sparkles className="h-4 w-4" />
-                <span>Succession Club</span>
-              </div>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                未来へ、事業をつなぐ。
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="引き継ぎ希望者を検索"
-                className="grid h-11 w-11 place-items-center rounded border border-zinc-800 bg-zinc-900/80 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                aria-label="通知"
-                className="hidden h-11 w-11 place-items-center rounded border border-zinc-800 bg-zinc-900/80 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200 lg:grid"
-              >
-                <Bell className="h-5 w-5" />
-              </button>
-              <Link
-                href="/candidates"
-                className="hidden h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black shadow-[0_0_28px_rgba(251,191,36,0.22)] transition hover:bg-amber-200 sm:inline-flex"
-              >
-                <Handshake className="h-4 w-4" />
-                引き継ぎ希望者を見る
-              </Link>
-              <LogoutButton />
-            </div>
-          </header>
-
-          <section className="mt-6 rounded border border-zinc-800 bg-black/30 p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-zinc-400">
-                ログイン中:{" "}
-                <span className="font-semibold text-zinc-100">{user.name}</span>
-                {" / "}
-                <span className="text-amber-200">{user.company.name}</span>
-                {" / "}
-                <span className="text-zinc-300">{user.role}</span>
-              </p>
-              <p className="text-sm text-zinc-400">
-                招待制クローズドβ / 審査制で最大10社まで無料
-              </p>
-            </div>
-          </section>
-
-          <section className="grid gap-3 py-6 sm:grid-cols-3">
-            {tractionStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded border border-amber-300/15 bg-black/35 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-              >
-                <p className="text-sm text-zinc-400">{stat.label}</p>
-                <div className="mt-3 flex items-end gap-1">
-                  <span className="text-4xl font-semibold tracking-tight text-amber-300 sm:text-5xl">
-                    {stat.value.toLocaleString("ja-JP")}
-                  </span>
-                  <span className="pb-1 text-sm font-medium text-amber-100/80">
-                    {stat.suffix}
-                  </span>
-                </div>
-                <p className="mt-3 text-xs leading-5 text-zinc-500">
-                  {stat.note}
-                </p>
-              </div>
-            ))}
-          </section>
-
-          <section className="grid gap-4 pb-6 xl:grid-cols-[1.35fr_0.65fr]">
-            <div className="rounded border border-zinc-800 bg-black/30 p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Dialogue Pipeline</span>
-                  </div>
-                  <h3 className="mt-2 text-xl font-semibold text-white">
-                    承継に向けた対話の進行状況
-                  </h3>
-                </div>
-                <p className="text-sm text-zinc-400">
-                  <span className="font-semibold text-amber-200">
-                    招待制クローズドβ
-                  </span>
-                  : 審査制で最大10社まで無料
-                </p>
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-4">
-                {pipelineItems.map((item) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <div
-                      key={item.label}
-                      className="rounded border border-zinc-800 bg-zinc-950/80 p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <Icon className="h-4 w-4 text-amber-300" />
-                        <span className="text-2xl font-semibold text-white">
-                          {item.value.toLocaleString("ja-JP")}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-xs font-medium text-zinc-400">
-                        {item.label}
-                      </p>
-                      <p className="mt-2 text-[11px] leading-5 text-zinc-500">
-                        {item.note}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="rounded border border-amber-300/15 bg-amber-300/[0.06] p-5">
-              <div className="flex items-center gap-2 text-amber-200">
-                <LockKeyhole className="h-4 w-4" />
-                <h3 className="text-sm font-semibold">β運営方針</h3>
-              </div>
-              <div className="mt-4 space-y-3">
-                <p className="text-sm leading-6 text-zinc-300">
-                  現在はβ版として、事業者と引き継ぎ希望者の登録・審査を丁寧に進めています。
-                </p>
-                <p className="text-sm leading-6 text-zinc-300">
-                  本人同意と審査が確認できたプロフィールのみ順次公開し、実績がない数字は表示しません。
-                </p>
-                <p className="text-sm leading-6 text-zinc-300">
-                  参考分析は判断材料の一つです。承継の意思決定を代替するものではありません。
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className="flex flex-col gap-4 py-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
-                <Flame className="h-4 w-4" />
-                <span>Succession Partners</span>
-              </div>
-              <h3 className="mt-2 text-2xl font-semibold text-white">
-                公開中の引き継ぎ希望者
-              </h3>
-            </div>
-
-            <Link
-              href="/candidates"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-200 transition hover:bg-amber-300/10"
-            >
-              すべて見る
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-          </section>
-
-          <section
-            id="candidates"
-            className="grid gap-4 py-5 md:grid-cols-2 xl:grid-cols-4"
-          >
-            {successorCandidates.map((candidate) => (
-              <article
-                key={candidate.id}
-                className="group flex min-h-[420px] flex-col rounded border border-zinc-800 bg-zinc-950/85 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.34)] transition hover:border-amber-300/35 hover:shadow-[0_20px_70px_rgba(212,175,55,0.10)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.24em] text-amber-300/70">
-                      Reviewed Profile
-                    </p>
-                    <h4 className="mt-3 text-xl font-semibold text-white">
-                      {candidate.name} / {candidate.age}歳
-                    </h4>
-                    <div className="mt-2 flex items-center gap-1 text-xs font-medium text-zinc-500">
-                      <MapPin className="h-3.5 w-3.5 text-amber-300/80" />
-                      <span>{candidate.region}</span>
-                    </div>
-                  </div>
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded border border-amber-300/20 bg-amber-300/10 text-amber-200">
-                    <Star className="h-5 w-5" />
-                  </div>
-                </div>
-
-                <p className="mt-5 text-lg font-semibold leading-7 text-zinc-100">
-                  {candidate.selfPr}
-                </p>
-
-                <p className="mt-4 text-sm leading-6 text-zinc-400">
-                  {candidate.career}
-                </p>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {candidate.skills.slice(0, 3).map((field) => (
-                    <span
-                      key={field}
-                      className="rounded border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs font-medium text-zinc-300"
-                    >
-                      {field}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="mt-auto pt-6">
-                  <div className="mb-4 flex items-center justify-between rounded border border-zinc-800 bg-black/35 px-3 py-3">
-                    <div className="flex items-center gap-2 text-sm text-zinc-300">
-                      <Target className="h-4 w-4 text-amber-300" />
-                      <span>参考指標</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-amber-300">
-                      <Zap className="h-4 w-4" />
-                      <span className="text-lg font-semibold">
-                        {getCandidateScore(candidate)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Link
-                      href={`/candidates/${candidate.id}`}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded border border-zinc-700 px-4 text-sm font-semibold text-zinc-100 transition hover:border-amber-300/40 hover:bg-zinc-900"
-                    >
-                      プロフィール詳細を見る
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                    <button
-                      type="button"
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 py-3 text-sm font-bold text-black shadow-[0_0_28px_rgba(251,191,36,0.24)] transition hover:bg-amber-200"
-                    >
-                      対話を申し込む
-                      <span className="text-xs font-semibold">
-                        （β期間中無料）
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-            {successorCandidates.length === 0 ? (
-              <div className="rounded border border-zinc-800 bg-zinc-950/85 p-6 md:col-span-2 xl:col-span-4">
-                <p className="text-base font-semibold text-white">
-                  現在、公開中の引き継ぎ希望者はありません。
-                </p>
-                <p className="mt-3 text-sm leading-6 text-zinc-400">
-                  Succession Clubは現在クローズドβとして、本人の同意が取れたプロフィールのみ順次公開しています。
-                </p>
-              </div>
-            ) : null}
-          </section>
-
-          <section
-            id="messages"
-            className="grid gap-4 pb-8 lg:grid-cols-[0.9fr_1.1fr]"
-          >
-            <div className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>Message Room</span>
-                  </div>
-                  <h3 className="mt-2 text-xl font-semibold text-white">
-                    最近の承継対話
-                  </h3>
-                </div>
-                <Link
-                  href="/messages"
-                  aria-label="メッセージを開く"
-                  className="grid h-10 w-10 place-items-center rounded border border-zinc-800 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200"
-                >
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                {recentThreads.map((thread) => {
-                  const latestMessage = thread.messages[0];
-
-                  return (
-                  <div
-                    key={thread.id}
-                    className="rounded border border-zinc-800 bg-black/35 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-semibold text-white">
-                        {thread.scoutRequest.candidate.name}
-                      </p>
-                      <span className="text-xs text-amber-200/70">
-                        {thread.updatedAt.toLocaleString("ja-JP")}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-zinc-400">
-                      {latestMessage?.body ?? thread.subject}
-                    </p>
-                  </div>
-                  );
-                })}
-                {recentThreads.length === 0 ? (
-                  <div className="rounded border border-zinc-800 bg-black/35 p-4">
-                    <p className="text-sm font-semibold text-white">
-                      メッセージはまだありません
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-zinc-400">
-                      対話スレッドを開始すると、ここに実データのみ表示されます。
-                    </p>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="rounded border border-amber-300/15 bg-black/35 p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
-                    <Sparkles className="h-4 w-4" />
-                    <span>Next Best Action</span>
-                  </div>
-                  <h3 className="mt-2 text-xl font-semibold text-white">
-                    プロフィール公開後に、丁寧な対話から開始
-                  </h3>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                    現在、招待制クローズドβとして運営しています。β期間中は、審査制で最大10社まで無料でご利用いただけます。
-                  </p>
-                </div>
-                <Link
-                  href="/candidates"
-                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black transition hover:bg-amber-200"
-                >
-                  引き継ぎ希望者を確認
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </section>
-
-          <section className="border-t border-zinc-800 py-8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mt-4 rounded border border-zinc-800 bg-zinc-950/80 p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
-                  <Sparkles className="h-4 w-4" />
-                  <span>Co-Creation</span>
-                </div>
-                <h3 className="mt-2 text-2xl font-semibold text-white">
-                  この活動を一緒に育てる
-                </h3>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400">
-                  Succession Clubは、地域の事業を未来へつなぐためのクローズドβです。資金募集ではなく、共創・連携・応援に関心のある方との対話を受け付けています。
+                <p className="text-sm font-semibold text-zinc-100">
+                  この活動を共有する
+                </p>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-400">
+                  {shareText}
                 </p>
               </div>
+              <a
+                href={shareUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
+              >
+                Xで共有する
+              </a>
             </div>
-
-            <div className="mt-5 grid gap-4 lg:grid-cols-3">
-              <article className="rounded border border-zinc-800 bg-black/30 p-5">
-                <p className="text-sm font-semibold text-amber-100">
-                  第1期 Founding Members
-                </p>
-                <p className="mt-3 text-sm leading-6 text-zinc-400">
-                  事業承継の新しい選択肢を一緒に育てる、最大10社の共創枠です。β期間中は無料でご利用いただけますが、無料キャンペーンではありません。
-                </p>
-                <Link
-                  href="/contact?topic=founding-member"
-                  className="mt-5 inline-flex h-10 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
-                >
-                  共創メンバーに関心がある
-                </Link>
-              </article>
-
-              <article className="rounded border border-zinc-800 bg-black/30 p-5">
-                <p className="text-sm font-semibold text-amber-100">
-                  協賛・連携に関心のある方
-                </p>
-                <p className="mt-3 text-sm leading-6 text-zinc-400">
-                  士業、金融機関、地域団体、企業、教育機関など、地域の事業承継を一緒に支える連携を検討しています。まずはお問い合わせください。
-                </p>
-                <Link
-                  href="/contact?topic=sponsor"
-                  className="mt-5 inline-flex h-10 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
-                >
-                  協賛・連携を相談する
-                </Link>
-              </article>
-
-              <article className="rounded border border-zinc-800 bg-black/30 p-5">
-                <p className="text-sm font-semibold text-amber-100">
-                  活動を応援したい方
-                </p>
-                <p className="mt-3 text-sm leading-6 text-zinc-400">
-                  後継者不足の認知拡大、クローズドβ参加者への情報提供、サービス改善に関心のある方はお問い合わせください。現在、サイト上での決済は受け付けていません。
-                </p>
-                <Link
-                  href="/contact?topic=support"
-                  className="mt-5 inline-flex h-10 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
-                >
-                  活動応援について問い合わせる
-                </Link>
-              </article>
-            </div>
-
-            <div className="mt-4 rounded border border-zinc-800 bg-zinc-950/80 p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-100">
-                    この活動を共有する
-                  </p>
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-400">
-                    {shareText}
-                  </p>
-                </div>
-                <a
-                  href={shareUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-10 shrink-0 items-center justify-center rounded border border-zinc-700 px-3 text-sm font-semibold text-zinc-200 transition hover:border-amber-300/40 hover:text-amber-100"
-                >
-                  Xで共有する
-                </a>
-              </div>
-            </div>
-          </section>
+          </div>
         </section>
-      </div>
+
+        <footer className="flex flex-col gap-3 border-t border-zinc-800 py-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>Succession Club / 未来へ、事業をつなぐ。</p>
+          <div className="flex flex-wrap gap-4">
+            <Link href="/terms" className="transition hover:text-amber-100">
+              利用規約
+            </Link>
+            <Link href="/privacy" className="transition hover:text-amber-100">
+              プライバシーポリシー
+            </Link>
+            <Link
+              href="/commercial-transaction"
+              className="transition hover:text-amber-100"
+            >
+              特定商取引法に基づく表記
+            </Link>
+          </div>
+        </footer>
+      </section>
     </main>
   );
 }

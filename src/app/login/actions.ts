@@ -112,5 +112,5 @@ export async function loginAction(
     ...requestContext,
   });
 
-  redirect("/");
+  redirect("/dashboard");
 }

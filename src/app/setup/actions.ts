@@ -93,5 +93,5 @@ export async function setupOwnerAction(
   });
 
   await createSession(result.user.id);
-  redirect("/");
+  redirect("/dashboard");
 }

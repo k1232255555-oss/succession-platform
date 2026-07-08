@@ -74,7 +74,7 @@ export default async function NewSuccessionBriefPage({
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto w-full max-w-5xl">
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-flex items-center gap-2 text-sm text-zinc-400 transition hover:text-amber-100"
         >
           <ArrowLeft className="h-4 w-4" />

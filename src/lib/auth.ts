@@ -124,7 +124,7 @@ export function canScoutCandidates(user: Pick<CompanyUser, "role">) {
 
 export function requireRole(user: Pick<CompanyUser, "role">, roles: UserRole[]) {
   if (!roles.includes(user.role)) {
-    redirect("/");
+    redirect("/dashboard");
   }
 }
 
