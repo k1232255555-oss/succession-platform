@@ -1,6 +1,5 @@
 import {
   ArrowUpRight,
-  Bell,
   BriefcaseBusiness,
   CalendarClock,
   ChevronRight,
@@ -12,7 +11,6 @@ import {
   LockKeyhole,
   MapPin,
   MessageCircle,
-  Search,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -203,13 +201,6 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              aria-label="通知"
-              className="grid h-10 w-10 place-items-center rounded border border-zinc-800 bg-zinc-950 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200 lg:hidden"
-            >
-              <Bell className="h-5 w-5" />
-            </button>
           </div>
 
           <nav className="mt-5 flex gap-2 overflow-x-auto pb-1 lg:mt-10 lg:flex-col lg:overflow-visible lg:pb-0">
@@ -260,20 +251,6 @@ export default async function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="引き継ぎ希望者を検索"
-                className="grid h-11 w-11 place-items-center rounded border border-zinc-800 bg-zinc-900/80 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                aria-label="通知"
-                className="hidden h-11 w-11 place-items-center rounded border border-zinc-800 bg-zinc-900/80 text-zinc-300 transition hover:border-amber-300/40 hover:text-amber-200 lg:grid"
-              >
-                <Bell className="h-5 w-5" />
-              </button>
               <Link
                 href="/candidates"
                 className="hidden h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 text-sm font-bold text-black shadow-[0_0_28px_rgba(251,191,36,0.22)] transition hover:bg-amber-200 sm:inline-flex"
