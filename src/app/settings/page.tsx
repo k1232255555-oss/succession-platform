@@ -6,6 +6,7 @@ import {
   Database,
   FileSearch,
   ShieldCheck,
+  UserRound,
   UsersRound,
 } from "lucide-react";
 import { requireRole, requireUser } from "@/lib/auth";
@@ -13,6 +14,12 @@ import { requireRole, requireUser } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 const settingLinks = [
+  {
+    href: "/settings/account",
+    label: "マイページ",
+    description: "登録情報の確認と、ご自身のパスワード変更を行います。",
+    icon: UserRound,
+  },
   {
     href: "/settings/security",
     label: "権限とセキュリティ",
@@ -69,9 +76,7 @@ export default async function SettingsPage() {
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100 sm:px-6 lg:px-10">
       <div className="mx-auto w-full max-w-6xl">
         <header className="border-b border-zinc-800 pb-6">
-          <p className="text-sm font-medium text-amber-200/80">
-            Operations
-          </p>
+          <p className="text-sm font-medium text-amber-200/80">運用設定</p>
           <h1 className="mt-3 text-3xl font-semibold text-white">設定</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
             本番運用に必要な権限、請求、監査、通知をまとめて管理します。

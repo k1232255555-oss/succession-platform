@@ -187,7 +187,7 @@ export default async function MessageThreadPage({
         <section className="mt-6 rounded border border-zinc-800 bg-black/35 p-5">
           <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
             <ShieldCheck className="h-4 w-4" />
-            <span>Reply</span>
+            <span>返信</span>
           </div>
 
           {thread.status === MessageThreadStatus.OPEN ? (

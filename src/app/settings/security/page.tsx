@@ -48,7 +48,7 @@ export default async function SecuritySettingsPage() {
         <div className="flex flex-col gap-4 border-b border-zinc-800 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-medium text-amber-200/80">
-              Security & Access
+              セキュリティと権限
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">
               権限管理と監査ログ
@@ -106,7 +106,7 @@ export default async function SecuritySettingsPage() {
         </section>
 
         <section className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
-          <h2 className="text-xl font-semibold text-white">Recent Audit Logs</h2>
+          <h2 className="text-xl font-semibold text-white">最近の監査ログ</h2>
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="text-zinc-500">

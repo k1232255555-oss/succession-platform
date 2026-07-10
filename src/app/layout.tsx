@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { SiteFooter } from "@/app/site-footer";
 import { getSafeAppUrl } from "@/lib/env";
 import "./globals.css";
 
@@ -12,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | Succession Club",
   },
   description:
-    "後継者不足に悩む事業者と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービス。",
+    "後継者不足に悩む事業者と、事業を引き継いで挑戦したい人をつなぐ仕組みを検証する、招待制クローズドβ。",
   applicationName: "Succession Club",
   authors: [{ name: "Succession Club" }],
   robots: {
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Succession Club | 未来へ、事業をつなぐ。",
     description:
-      "後継者不足に悩む事業者と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービス。",
+      "後継者不足に悩む事業者と、事業を引き継いで挑戦したい人をつなぐ仕組みを検証する、招待制クローズドβ。",
     url: appUrl,
     siteName: "Succession Club",
     locale: "ja_JP",
@@ -37,10 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className="h-full antialiased">
-      <body className="min-h-full bg-zinc-950 flex flex-col">
-        {children}
-        <SiteFooter />
-      </body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }

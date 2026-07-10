@@ -345,7 +345,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
         >
           <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
             <SlidersHorizontal className="h-4 w-4" />
-            <span>Search Filters</span>
+            <span>検索条件</span>
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
@@ -472,7 +472,7 @@ export default async function CandidatesPage({ searchParams }: PageProps) {
         <section className="mt-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
             <Sparkles className="h-4 w-4" />
-            <span>{candidates.length} candidates</span>
+            <span>{candidates.length}名</span>
           </div>
           <div className="hidden items-center gap-2 text-sm text-zinc-500 sm:flex">
             <Target className="h-4 w-4 text-amber-300" />

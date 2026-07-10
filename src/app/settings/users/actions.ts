@@ -14,10 +14,21 @@ import { getEffectivePlanConfig, isWithinLimit } from "@/lib/billing";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 
-function parseRole(value: FormDataEntryValue | null, actorRole: UserRole) {
+function parseRole(
+  value: FormDataEntryValue | null,
+  actorRole: UserRole,
+  currentRole?: UserRole,
+) {
   const role = String(value ?? "");
 
-  if (role === UserRole.ADMIN && actorRole === UserRole.OWNER) {
+  if (role === UserRole.OWNER && actorRole === UserRole.OWNER) {
+    return UserRole.OWNER;
+  }
+
+  if (
+    role === UserRole.ADMIN &&
+    (actorRole === UserRole.OWNER || currentRole === UserRole.ADMIN)
+  ) {
     return UserRole.ADMIN;
   }
 
@@ -29,7 +40,7 @@ function parseRole(value: FormDataEntryValue | null, actorRole: UserRole) {
     return UserRole.VIEWER;
   }
 
-  return UserRole.MEMBER;
+  return currentRole ?? UserRole.MEMBER;
 }
 
 async function ensureCanManageUsers() {
@@ -155,7 +166,6 @@ export async function updateCompanyUserAction(
 
   const actor = await ensureCanManageUsers();
   const name = String(formData.get("name") ?? "").trim();
-  const role = parseRole(formData.get("role"), actor.role);
   const isActive = formData.get("isActive") === "on";
 
   if (!name) {
@@ -165,6 +175,23 @@ export async function updateCompanyUserAction(
   if (targetUserId === actor.id && !isActive) {
     redirect("/settings/users?error=自分自身は停止できません。");
   }
+
+  const existingTarget = await prisma.companyUser.findFirst({
+    where: {
+      id: targetUserId,
+      companyId: actor.companyId,
+    },
+  });
+
+  if (!existingTarget) {
+    redirect("/settings/users?error=ユーザーが見つかりません。");
+  }
+
+  const role = parseRole(
+    formData.get("role"),
+    actor.role,
+    existingTarget.role,
+  );
 
   const target = await ensureOwnerContinuity({
     companyId: actor.companyId,

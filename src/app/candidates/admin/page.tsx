@@ -61,7 +61,7 @@ export default async function CandidateAdminPage({ searchParams }: PageProps) {
             </Link>
             <div className="mt-4 flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <Crown className="h-4 w-4" />
-              <span>OWNER Console</span>
+              <span>OWNER管理</span>
             </div>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
               候補者管理

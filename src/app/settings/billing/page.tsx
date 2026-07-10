@@ -124,13 +124,13 @@ export default async function BillingPage({ searchParams }: PageProps) {
             </Link>
             <div className="mt-4 flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <CreditCard className="h-4 w-4" />
-              <span>Billing</span>
+              <span>決済設定</span>
             </div>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
               決済とプラン管理
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              現在、招待制クローズドβとして運営しています。β期間中は、審査制で最大10社まで無料でご利用いただけます。
+              第1期の初期参加事業者としてご参加いただく最大10社は、現在提供中の基本機能をβ終了後も無料で利用できる方針です。
             </p>
           </div>
 
@@ -161,7 +161,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
 
         {!stripeBillingEnabled ? (
           <div className="mt-5 rounded border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
-            Stripe課金は現在OFFです。クローズドβ期間中は、審査制で最大10社まで無料運用します。
+            Stripe課金は現在OFFです。第1期の初期参加事業者に提供する基本機能と、将来追加する有料機能の対象範囲は事前に明示します。
           </div>
         ) : !stripeConfigured ? (
           <div className="mt-5 rounded border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
@@ -173,7 +173,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
           <article className="rounded border border-amber-300/15 bg-amber-300/[0.06] p-5">
             <div className="flex items-center gap-2 text-amber-200">
               <Crown className="h-4 w-4" />
-              <h2 className="text-sm font-semibold">Current Plan</h2>
+              <h2 className="text-sm font-semibold">現在のプラン</h2>
             </div>
             <p className="mt-4 text-4xl font-semibold text-amber-300">
               {currentPlan.name}
@@ -204,7 +204,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
           <article className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <Gauge className="h-4 w-4" />
-              <span>Usage</span>
+              <span>利用状況</span>
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-3">
               {usageItems.map((item) => (
@@ -320,7 +320,7 @@ export default async function BillingPage({ searchParams }: PageProps) {
         <section className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
           <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
             <FileText className="h-4 w-4" />
-            <span>Invoices</span>
+            <span>請求履歴</span>
           </div>
           <h2 className="mt-2 text-xl font-semibold text-white">請求履歴</h2>
 

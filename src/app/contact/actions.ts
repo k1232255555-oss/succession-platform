@@ -25,14 +25,7 @@ async function sendContactEmail(input: {
   const to = process.env.CONTACT_TO_EMAIL?.trim();
 
   if (!apiKey || !from || !to) {
-    console.info("[contact:accepted_without_email]", {
-      name: input.name,
-      email: input.email,
-      category: input.category,
-      messageLength: input.message.length,
-      acceptedAt: new Date().toISOString(),
-    });
-    return "logged";
+    return "not_configured";
   }
 
   const response = await fetch(resendEndpoint, {
@@ -59,17 +52,11 @@ async function sendContactEmail(input: {
   });
 
   if (!response.ok) {
-    const result = (await response.json().catch(() => ({}))) as {
-      message?: string;
-      error?: string;
-    };
-
     console.error("[contact:email_failed]", {
       status: response.status,
-      error: result.message ?? result.error ?? "Unknown Resend error",
       acceptedAt: new Date().toISOString(),
     });
-    return "logged";
+    return "failed";
   }
 
   return "emailed";
@@ -98,10 +85,25 @@ export async function submitContactAction(formData: FormData) {
     message,
   });
 
-  const notice =
-    result === "emailed"
-      ? "お問い合わせを受け付けました。運営側で内容を確認します。"
-      : "お問い合わせを受け付けました。メール送信が未設定の場合も、受付ログとして記録します。";
+  if (result === "not_configured") {
+    redirect(
+      `/contact?error=${encodeURIComponent(
+        "現在、お問い合わせ送信の準備中です。設定完了後にあらためてお試しください。",
+      )}`,
+    );
+  }
 
-  redirect(`/contact?notice=${encodeURIComponent(notice)}`);
+  if (result === "failed") {
+    redirect(
+      `/contact?error=${encodeURIComponent(
+        "お問い合わせを送信できませんでした。時間をおいて、もう一度お試しください。",
+      )}`,
+    );
+  }
+
+  redirect(
+    `/contact?notice=${encodeURIComponent(
+      "お問い合わせを送信しました。運営側で内容を確認します。",
+    )}`,
+  );
 }

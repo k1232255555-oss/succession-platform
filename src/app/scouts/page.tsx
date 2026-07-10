@@ -112,7 +112,7 @@ export default async function ScoutsPage({ searchParams }: PageProps) {
         >
           <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
             <SlidersHorizontal className="h-4 w-4" />
-            <span>Filters</span>
+            <span>絞り込み</span>
           </div>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <select

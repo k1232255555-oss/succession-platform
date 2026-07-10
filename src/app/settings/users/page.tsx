@@ -99,7 +99,7 @@ export default async function UsersSettingsPage({ searchParams }: PageProps) {
             </Link>
             <div className="mt-4 flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <UsersRound className="h-4 w-4" />
-              <span>Team Operations</span>
+              <span>ユーザー管理</span>
             </div>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
               ユーザー管理
@@ -132,7 +132,7 @@ export default async function UsersSettingsPage({ searchParams }: PageProps) {
           <article className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <UserPlus className="h-4 w-4" />
-              <span>New User</span>
+              <span>新規ユーザー</span>
             </div>
             <h2 className="mt-2 text-xl font-semibold text-white">
               メンバーを追加
@@ -193,7 +193,7 @@ export default async function UsersSettingsPage({ searchParams }: PageProps) {
           <section className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <ShieldCheck className="h-4 w-4" />
-              <span>Current Users</span>
+              <span>登録ユーザー</span>
             </div>
             <h2 className="mt-2 text-xl font-semibold text-white">
               登録ユーザー

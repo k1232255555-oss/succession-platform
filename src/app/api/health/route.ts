@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getPublicEnvStatus } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +13,6 @@ export async function GET() {
       {
         ok: true,
         database: "ok",
-        environment: getPublicEnvStatus(),
         latencyMs: Date.now() - startedAt,
       },
       {
@@ -28,7 +26,6 @@ export async function GET() {
       {
         ok: false,
         database: "unavailable",
-        environment: getPublicEnvStatus(),
         latencyMs: Date.now() - startedAt,
       },
       {

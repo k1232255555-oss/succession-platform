@@ -40,7 +40,7 @@ export async function startCheckoutAction(plan: BillingPlan) {
   if (!isStripeBillingEnabled()) {
     redirect(
       `/settings/billing?notice=${encodeURIComponent(
-        "招待制クローズドβ期間中は、審査制で最大10社まで無料です。課金開始までCheckoutは無効です。",
+        "現在は招待制クローズドβのため課金を行っていません。課金開始までCheckoutは無効です。",
       )}`,
     );
   }
@@ -157,7 +157,7 @@ export async function startCustomerPortalAction() {
   if (!isStripeBillingEnabled()) {
     redirect(
       `/settings/billing?notice=${encodeURIComponent(
-        "招待制クローズドβ期間中は、審査制で最大10社まで無料運用中です。Customer Portalは課金開始後に利用できます。",
+        "現在は招待制クローズドβのため課金を行っていません。Customer Portalは課金開始後に利用できます。",
       )}`,
     );
   }

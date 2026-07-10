@@ -17,6 +17,7 @@ import {
   Star,
   Target,
   TrendingUp,
+  UserRound,
   UserRoundSearch,
   Zap,
 } from "lucide-react";
@@ -37,6 +38,7 @@ const navItems = [
   { label: "メッセージ", href: "/messages", icon: MessageCircle, active: false },
   { label: "承継ブリーフ", href: "/succession-brief/new", icon: BriefcaseBusiness, active: false },
   { label: "決済管理", href: "/settings/billing", icon: CreditCard, active: false },
+  { label: "マイページ", href: "/settings/account", icon: UserRound, active: false },
   { label: "設定", href: "/settings", icon: Settings, active: false },
 ];
 
@@ -246,7 +248,7 @@ export default async function DashboardPage() {
                 未来へ、事業をつなぐ。
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                後継者不足に悩む事業者と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
+                事業者と引き継ぎ希望者をつなぐ仕組みを検証しています。現在は事業者側からの候補者閲覧・対話申請が中心です。
               </p>
             </div>
 
@@ -273,7 +275,7 @@ export default async function DashboardPage() {
                 <span className="text-zinc-300">{user.role}</span>
               </p>
               <p className="text-sm text-zinc-400">
-                招待制クローズドβ / 審査制で最大10社まで無料
+                招待制クローズドβ / 第1期 参加事業者は最大10社
               </p>
             </div>
           </section>
@@ -306,7 +308,7 @@ export default async function DashboardPage() {
                 <div>
                   <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
                     <TrendingUp className="h-4 w-4" />
-                    <span>Dialogue Pipeline</span>
+                    <span>対話の進行</span>
                   </div>
                   <h3 className="mt-2 text-xl font-semibold text-white">
                     承継に向けた対話の進行状況
@@ -316,7 +318,7 @@ export default async function DashboardPage() {
                   <span className="font-semibold text-amber-200">
                     招待制クローズドβ
                   </span>
-                  : 審査制で最大10社まで無料
+                  : 第1期 参加事業者は最大10社
                 </p>
               </div>
 
@@ -398,7 +400,7 @@ export default async function DashboardPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-medium uppercase tracking-[0.24em] text-amber-300/70">
-                      Reviewed Profile
+                      審査済みプロフィール
                     </p>
                     <h4 className="mt-3 text-xl font-semibold text-white">
                       {candidate.name} / {candidate.age}歳
@@ -454,15 +456,6 @@ export default async function DashboardPage() {
                       プロフィール詳細を見る
                       <ChevronRight className="h-4 w-4" />
                     </Link>
-                    <button
-                      type="button"
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded bg-amber-300 px-4 py-3 text-sm font-bold text-black shadow-[0_0_28px_rgba(251,191,36,0.24)] transition hover:bg-amber-200"
-                    >
-                      対話を申し込む
-                      <span className="text-xs font-semibold">
-                        （β期間中無料）
-                      </span>
-                    </button>
                   </div>
                 </div>
               </article>
@@ -544,13 +537,13 @@ export default async function DashboardPage() {
                 <div>
                   <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
                     <Sparkles className="h-4 w-4" />
-                    <span>Next Best Action</span>
+                    <span>次にできること</span>
                   </div>
                   <h3 className="mt-2 text-xl font-semibold text-white">
                     プロフィール公開後に、丁寧な対話から開始
                   </h3>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                    現在、招待制クローズドβとして運営しています。β期間中は、審査制で最大10社まで無料でご利用いただけます。
+                    第1期の初期参加事業者としてご参加いただく最大10社は、現在提供中の基本機能をβ終了後も無料で利用できる方針です。対象範囲は事前に明示します。
                   </p>
                 </div>
                 <Link

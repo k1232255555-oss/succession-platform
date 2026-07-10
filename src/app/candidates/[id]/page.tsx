@@ -461,7 +461,7 @@ export default async function CandidateDetailPage({
           <article className="rounded border border-zinc-800 bg-zinc-950/85 p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-amber-200/80">
               <CalendarClock className="h-4 w-4" />
-              <span>Dialogue History</span>
+              <span>対話履歴</span>
             </div>
             <h3 className="mt-3 text-xl font-semibold text-white">
               対話申請履歴

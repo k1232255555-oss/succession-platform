@@ -119,7 +119,7 @@ export function getEffectivePlanConfig(plan: BillingPlan) {
   return {
     ...getPlanConfig(BillingPlan.FREE),
     description:
-      "招待制クローズドβ期間中は、審査制で最大10社まで無料で利用できます。",
+      "第1期の初期参加事業者には、現在提供中の基本機能を無料で提供します。",
     priceLabel: "クローズドβ無料",
     limits: {
       users: "unlimited",
