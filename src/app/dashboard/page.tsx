@@ -255,7 +255,7 @@ export default async function DashboardPage() {
                 未来へ、事業をつなぐ。
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-                後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
+                後継者不足に悩む事業者と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
               </p>
             </div>
 

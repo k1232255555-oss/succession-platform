@@ -20,7 +20,7 @@ export default async function ContactPage({ searchParams }: PageProps) {
   const error = getParam(params, "error");
   const topic = getParam(params, "topic") ?? "";
   const topicCategoryMap: Record<string, string> = {
-    "founding-member": "Founding Members参加希望",
+    "founding-member": "第1期 参加事業者の相談",
     sponsor: "協賛・連携の相談",
     support: "活動応援・広報協力",
   };
@@ -123,7 +123,7 @@ export default async function ContactPage({ searchParams }: PageProps) {
                   defaultValue={defaultCategory}
                 >
                   <option>導入相談</option>
-                  <option>Founding Members参加希望</option>
+                  <option>第1期 参加事業者の相談</option>
                   <option>協賛・連携の相談</option>
                   <option>活動応援・広報協力</option>
                   <option>候補者情報の訂正・削除依頼</option>

@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 
 const shareText = [
-  "後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、招待制クローズドβ「Succession Club」。",
+  "後継者不足に悩む事業者と、事業を引き継いで挑戦したい人をつなぐ、招待制クローズドβ「Succession Club」。",
   "未来へ、事業をつなぐ。",
   "https://succession-platform-iota.vercel.app",
 ].join("\n");
@@ -24,10 +24,10 @@ const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
 
 const contactLinks = [
   {
-    title: "第1期 Founding Members",
-    body: "事業承継の新しい選択肢を一緒に育てる、最大10社の共創枠です。β期間中は無料でご利用いただけますが、無料キャンペーンではありません。",
+    title: "第1期 参加事業者",
+    body: "初期からこの取り組みに参加してくださる事業者向けに、最大10社までβ期間後も無料でご利用いただける特別枠を用意しています。共同運営者の募集ではありません。",
     href: "/contact?topic=founding-member",
-    label: "共創メンバーに関心がある",
+    label: "初期参加について相談する",
     icon: UsersRound,
   },
   {
@@ -78,7 +78,7 @@ export default function PublicHomePage() {
               href="/login"
               className="inline-flex h-10 items-center justify-center rounded border border-zinc-800 px-3 text-sm font-semibold text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100"
             >
-              関係者ログイン
+              ログイン
             </Link>
           </nav>
         </header>
@@ -94,7 +94,7 @@ export default function PublicHomePage() {
               <span className="inline-block">事業をつなぐ。</span>
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-300 sm:text-lg">
-              後継者不足で消えそうな事業と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
+              後継者不足に悩む事業者と、事業を引き継いで挑戦したい人をつなぐ、双方向の事業承継マッチングサービスです。
             </p>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-400">
               M&A、親族承継、従業員承継を否定せず、もう一つの選択肢として、地域の技術・雇用・関係性を未来へつなぐことを目指しています。
@@ -105,7 +105,7 @@ export default function PublicHomePage() {
                 href="/contact?topic=founding-member"
                 className="inline-flex h-11 items-center justify-center gap-2 rounded border border-amber-300/30 px-4 text-sm font-semibold text-amber-100 transition hover:bg-amber-300/10"
               >
-                Founding Membersに関心がある
+                初期参加について相談する
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
               <Link
